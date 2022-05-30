@@ -1,0 +1,11 @@
+<div class="full-size" style="position: relative;" fxLayoutAlign="center center" #divElement fxFlex="grow">
+    <youtube-player #video
+    (ready)="onReady($event)"
+    [videoId]="videoId"
+    [width]="500"
+    [height]="300"
+    [playerVars]="videoPlayerVars"
+    style="pointer-events: none"
+    >
+  </youtube-player>
+</div>
