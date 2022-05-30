@@ -1,6 +1,8 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { YouTubePlayer } from '@angular/youtube-player';
+import { SubscriberOxDirective } from 'micro-lesson-components';
 import { timer } from 'rxjs';
+import { InteractiveVideoService } from 'src/app/shared/services/interactive-video.service';
 import { getYouTubeId } from 'src/app/shared/types/functions';
 
 
@@ -9,7 +11,7 @@ import { getYouTubeId } from 'src/app/shared/types/functions';
   templateUrl: './interactive-video.component.html',
   styleUrls: ['./interactive-video.component.scss']
 })
-export class InteractiveVideoComponent implements OnInit, AfterViewInit {
+export class InteractiveVideoComponent extends SubscriberOxDirective implements OnInit, AfterViewInit {
 
   @ViewChild(YouTubePlayer) youtubePlayer!: YouTubePlayer;
 
@@ -27,31 +29,61 @@ export class InteractiveVideoComponent implements OnInit, AfterViewInit {
   public videoId!:string;
 
 
-  constructor() { 
-    this.videoId = getYouTubeId('//www.youtube.com/v/qUJYqhKZrwA?autoplay=1&showinfo=0&controls=0')
-    console.log(this.videoId)
+  constructor(private interactiveVideo:InteractiveVideoService) { 
+    super();
+   
   }
  
 
   ngOnInit(): void {
-  
+    this.videoId = getYouTubeId('//www.youtube.com/v/qUJYqhKZrwA?autoplay=1&showinfo=0&controls=0')
+    this.changeVideo(1, 0)
+
   }
 
 
   ngAfterViewInit(): void {
+    console.log(this.videoId);
    console.log(this.youtubePlayer)
 
   }
 
   onReady($event: YT.PlayerEvent) {
     this.player = $event.target; 
-      this.player?.loadVideoById({
-        videoId: this.videoId,
-        startSeconds: 10
-    })
+    //   this.player?.loadVideoById({
+    //     videoId: this.videoId,
+    //     startSeconds: 10
+    // })
   }
 
 
+  private changeVideo(id: number, startIn?: number) {
+    this.player?.loadVideoById({
+      videoId: this.videoId,
+      startSeconds: startIn
+    });
+    if (!this.videoId) {
+      throw new Error('You ask for a change to an unrecognized video with id ' + id);
+    }
+  }
+
+  onStateChange($event: YT.OnStateChangeEvent) {
+    switch ($event.data) {
+      case YT.PlayerState.PLAYING:
+        break;
+      case YT.PlayerState.CUED:
+        this.onCueChange($event);
+        break;
+      default:
+        break;
+    }
+  }
+
+
+  onCueChange($event: YT.OnStateChangeEvent) {
+    this.youtubePlayer.seekTo(10, true);
+    this.youtubePlayer.playVideo();
+  }
   // onStateChange($event: YT.OnStateChangeEvent) {
   //   switch ($event.data) {
   //     case YT.PlayerState.PLAYING:

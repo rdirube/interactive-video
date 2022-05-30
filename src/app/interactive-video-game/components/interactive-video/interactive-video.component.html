@@ -1,6 +1,7 @@
-<div class="full-size" style="position: relative;" fxLayoutAlign="center center" #divElement fxFlex="grow">
+<div class="full-size" style="position: relative;" fxLayoutAlign="center center"t fxFlex="grow">
     <youtube-player #video
     (ready)="onReady($event)"
+    (stateChange)="onStateChange($event)"
     [videoId]="videoId"
     [width]="500"
     [height]="300"
