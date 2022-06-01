@@ -1,12 +1,12 @@
-<div class="full-size" style="position: relative;" fxLayoutAlign="center center"t fxFlex="grow">
+<div #videoContainer  class="full-size" style="position: relative;width: 100%; height:100%" fxLayoutAlign="center center"t fxFlex="grow">
     <youtube-player #video
     (ready)="onReady($event)"
     (stateChange)="onStateChange($event)"
     [videoId]="videoId"
-    [width]="500"
-    [height]="300"
+    [width]="videoWidth"
+    [height]="videoHeight"
     [playerVars]="videoPlayerVars"
-    style="pointer-events: none"
     >
   </youtube-player>
+  <app-activity *ngIf="questionOn" class="full-size" style=" position: absolute;" ></app-activity>
 </div>

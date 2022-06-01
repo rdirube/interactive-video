@@ -4,12 +4,14 @@ import { SharedModule } from '../shared/shared.module';
 import { GameBodyComponent } from './components/game-body/game-body.component';
 import { InteractiveVideoComponent } from './components/interactive-video/interactive-video.component';
 import {YouTubePlayerModule} from '@angular/youtube-player';
+import { ActivityComponent } from './components/activity/activity.component';
 
 
 @NgModule({
   declarations: [
     GameBodyComponent,
-    InteractiveVideoComponent
+    InteractiveVideoComponent,
+    ActivityComponent
   ],
   imports: [
     CommonModule,

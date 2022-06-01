@@ -15,3 +15,8 @@ export function getYouTubeId(url: string) {
       isVideo:true
     };
   }
+
+
+  export function vhToPx(vh:number, documentSize:number) {
+   return vh*documentSize/100
+  }

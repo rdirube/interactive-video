@@ -1,10 +1,10 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { YouTubePlayer } from '@angular/youtube-player';
 import { SubscriberOxDirective } from 'micro-lesson-components';
 import { timer } from 'rxjs';
 import { InteractiveVideoService } from 'src/app/shared/services/interactive-video.service';
 import { getYouTubeId } from 'src/app/shared/types/functions';
-
+import { vhToPx } from 'src/app/shared/types/functions';
 
 @Component({
   selector: 'app-interactive-video',
@@ -14,6 +14,7 @@ import { getYouTubeId } from 'src/app/shared/types/functions';
 export class InteractiveVideoComponent extends SubscriberOxDirective implements OnInit, AfterViewInit {
 
   @ViewChild(YouTubePlayer) youtubePlayer!: YouTubePlayer;
+  @ViewChild('videoContainer') videoContainer!: ElementRef;
 
   public player!: YT.Player;
   videoPlayerVars: YT.PlayerVars = {
@@ -24,6 +25,9 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     controls:0,
     rel: 0,
   };
+  public videoWidth!:number;
+  public videoHeight!:number;
+  public questionOn!:boolean;
 
 
   public videoId!:string;
@@ -36,6 +40,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
  
 
   ngOnInit(): void {
+    this.questionOn = false;
     this.videoId = getYouTubeId('//www.youtube.com/v/qUJYqhKZrwA?autoplay=1&showinfo=0&controls=0')
     this.changeVideo(1, 0)
 
@@ -43,9 +48,9 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
 
   ngAfterViewInit(): void {
-    console.log(this.videoId);
-   console.log(this.youtubePlayer)
-
+    console.log(this.videoContainer)
+    this.videoHeight = document.body.clientHeight
+    this.videoWidth = document.body.clientWidth;
   }
 
   onReady($event: YT.PlayerEvent) {
