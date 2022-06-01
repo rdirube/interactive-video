@@ -3,8 +3,8 @@ import { Component, ElementRef } from '@angular/core';
 import { TranslocoService } from '@ngneat/transloco';
 import { AppInfoOxService, BaseMicroLessonApp, EndGameService, GameActionsService, InWumboxService, LevelService, MicroLessonCommunicationService, MicroLessonMetricsService, ProgressService, ResourceStateService, SoundOxService } from 'micro-lesson-core';
 import { PostMessageBridgeFactory } from 'ngox-post-message';
-import { CommunicationOxService, I18nService, PreloaderOxService, ResourceOx } from 'ox-core';
-import { ResourceFinalStateOxBridge } from 'ox-types';
+import { CommunicationOxService, I18nService, PreloaderOxService, ResourceOx, ResourceType } from 'ox-core';
+import { ResourceFinalStateOxBridge, ScreenTypeOx } from 'ox-types';
 import { environment } from 'src/environments/environment';
 import { InteractiveVideoChallengeService } from './shared/services/interactive-video-challenge.service';
 
@@ -49,7 +49,12 @@ export class AppComponent extends BaseMicroLessonApp {
   return environment.basePath;
     }
   protected getGameResourcesToLoad(): ResourceOx[] {
-    return []
+    const svg:string[] = ['mute.svg', 'unmute.svg'];
+    const svgElementos: string[] = ['check.svg', 'copa-memotest.svg', 'next-memotest.svg', 'surrender.svg', 'menu.svg', 'pista.svg', 'sonido-activado.svg'];
+
+    return svg.map(x => new ResourceOx('interactive-video/svg/' + x, ResourceType.Svg,
+    [ScreenTypeOx.Game], true)).concat(svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/interactive-video/buttons/' + x, ResourceType.Svg,
+    [ScreenTypeOx.Game], true)))
   }
   title = 'interactive-video';
 }

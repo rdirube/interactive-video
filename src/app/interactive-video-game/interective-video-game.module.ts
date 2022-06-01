@@ -5,6 +5,7 @@ import { GameBodyComponent } from './components/game-body/game-body.component';
 import { InteractiveVideoComponent } from './components/interactive-video/interactive-video.component';
 import {YouTubePlayerModule} from '@angular/youtube-player';
 import { ActivityComponent } from './components/activity/activity.component';
+import {NgxSliderModule} from '@angular-slider/ngx-slider';
 
 
 @NgModule({
@@ -16,11 +17,13 @@ import { ActivityComponent } from './components/activity/activity.component';
   imports: [
     CommonModule,
     SharedModule,
-    YouTubePlayerModule
+    YouTubePlayerModule,
+    NgxSliderModule
   ],
   exports: [
     GameBodyComponent,
-    YouTubePlayerModule
+    YouTubePlayerModule,
+    NgxSliderModule
   ]
 })
 export class InterectiveVideoGameModule { }

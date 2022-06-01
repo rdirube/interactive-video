@@ -6,7 +6,36 @@
     [width]="videoWidth"
     [height]="videoHeight"
     [playerVars]="videoPlayerVars"
+    style="pointer-events: none" 
     >
   </youtube-player>
-  <app-activity *ngIf="questionOn" class="full-size" style=" position: absolute;" ></app-activity>
+  <div class="full-size" (click)="playPauseEvent(false,$event)" style="position: absolute;">
+  </div>
+  <!-- <div *ngIf="!questionOn" fxLayoutAlign="space-evenly center" style="width:100%; height: 10vh;background-image: linear-gradient(180deg, #666666, #000000); z-index: 100; position: absolute; bottom:0 ">
+    <div fxLayoutAlign="center center">
+    <div class="rewind-container" (click)="videoTranslation(false)">
+      <div class="movement-button"></div>
+      <div class="movement-button" style="transform:translateX(2vh)"></div>
+    </div> 
+    <div class="playpause" (click)="playPauseEvent(true, $event)">
+      <input #playPauseInput type="checkbox" value="None" id="playpause" name="check" />
+      <label for="playpause" tabindex=1></label>
+    </div>
+    <div class="foward-container" (click)="videoTranslation(true)">
+      <div class="movement-button"></div>
+      <div class="movement-button" style="transform:translateX(2vh)"></div>
+    </div>
+  </div>
+    <div  class="custom-slider" style=" width:60%; transform: translateY(-1.4vh);">
+      <ngx-slider [options]="videoOptions" [(value)]="currentTime"></ngx-slider>
+    </div>
+    <div style="color:#CDCDCD; transform: translateX(-2vh); font-size: 2.5vh;">
+      <p>{{currentTimeToShow}} / {{durationToShow}}</p>
+    </div>
+    <div style="width:5vh; cursor: pointer;" (click)="soundOnOff()">
+      <img [src]="soundImage">
+    </div>
+  </div>  -->
+  
+  <app-activity *ngIf="questionOn" class="full-size" style=" position: absolute;" ></app-activity> 
 </div>

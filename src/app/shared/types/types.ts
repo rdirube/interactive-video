@@ -1,5 +1,6 @@
 export type InteractionEventType = 'go-to-video' | 'go-to-time' | 'continue' | 'open-interaction' | 'play-sound' | 'none';
 export type   InteractionEventDataType = GoToVideoEvent | GoToTimeEvent  | {};
+export type ExerciseType = 'complete' | 'select';
 
 
 export interface UserVideoFields {
@@ -40,3 +41,26 @@ export interface UserVideoFields {
     eventData: InteractionEventDataType;
   }
   
+
+  
+export interface InteractiveVideoNivelation {
+  videoInfo:UserVideoFields
+  questionResume:QuestionResume[]
+}
+
+export interface QuestionResume {
+  id:number,
+  question:string,
+  options: OptionsAnswer[],
+  uniqueAnswer:string,
+  type:ExerciseType,
+  positionInVideo:number,
+  corrected:boolean,
+  appearence:string;
+  rewindAppearence:string;
+}
+
+export interface OptionsAnswer {
+  content:string
+  isAnswer:boolean
+}
