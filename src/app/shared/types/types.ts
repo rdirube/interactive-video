@@ -60,6 +60,10 @@ export interface QuestionResume {
   rewindAppearence:string;
 }
 
+export interface InteractiveVideoExercise {
+  exercise : QuestionResume
+}
+
 export interface OptionsAnswer {
   content:string
   isAnswer:boolean

@@ -1,6 +1,15 @@
 <div class="full-size">
-    <app-interactive-video></app-interactive-video>
-    <mlc-footer style=" width: 97.5%; height: 12vh; position: absolute; bottom: 0;"
+    <div class="myAbsolute full-width" style="height: 13vh; z-index: 10" fxLayoutAlign="space-between">
+        <mlc-to-in-game-menu-button [forceNoAnimations]="true"
+          style="width: 13vh;" svgPath="mini-lessons/executive-functions/interactive-video/buttons/menu.svg">
+        </mlc-to-in-game-menu-button>
+        <mlc-hint-button   style="width: 13vh; opacity: 1;"
+          svgPath="mini-lessons/executive-functions/interactive-video/buttons/pista.svg"
+          >
+        </mlc-hint-button>
+      </div>
+    <app-interactive-video [questionOn]="questionOn" [exercise]="exercise"></app-interactive-video>
+    <mlc-footer class="button-menu" style=" width: 97.5%; height: 12vh; position: absolute; bottom: 0;"
     trySvg="mini-lessons/executive-functions/interactive-video/buttons/check.svg"
     surrenderSvg="mini-lessons/executive-functions/interactive-video/buttons/surrender.svg"
     resultsSvg="mini-lessons/executive-functions/interactive-video/buttons/copa-memotest.svg"

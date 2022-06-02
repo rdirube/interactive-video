@@ -38,7 +38,7 @@
     "ox-core": "^1.1.0",
     "ox-types": "^0.1.96",
     "quill": "^1.3.7",
-    "rxjs": "~6.6.0",
+    "rxjs": "^7.5.5",
     "snapsvg-cjs": "0.0.6",
     "tslib": "^2.3.0",
     "typography-ox": "^1.1.0",

@@ -37,17 +37,19 @@ export class AppComponent extends BaseMicroLessonApp {
       }
     });
 
-     preloader.addResourcesToLoad(this.getGameResourcesToLoad());
+    // preloader.addResourcesToLoad(this.getGameResourcesToLoad());
     console.log('App component instanciated', this);
     this.sound.setSoundOn(true);  
-    preloader.loadAll().subscribe(x => this.loaded = true)
+   preloader.loadAll().subscribe(x => this.loaded = true)
   }
 
 
 
   protected getBasePath(): string {
   return environment.basePath;
-    }
+   }
+
+
   protected getGameResourcesToLoad(): ResourceOx[] {
     const svg:string[] = ['mute.svg', 'unmute.svg'];
     const svgElementos: string[] = ['check.svg', 'copa-memotest.svg', 'next-memotest.svg', 'surrender.svg', 'menu.svg', 'pista.svg', 'sonido-activado.svg'];

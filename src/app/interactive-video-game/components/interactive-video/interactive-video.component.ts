@@ -1,11 +1,12 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { YouTubePlayer } from '@angular/youtube-player';
 import { SubscriberOxDirective } from 'micro-lesson-components';
 import { interval, Subscription, timer } from 'rxjs';
 import { InteractiveVideoService } from 'src/app/shared/services/interactive-video.service';
-import { getYouTubeId, secondsToHHMMSS } from 'src/app/shared/types/functions';
+import { getYouTubeId, HHMMSStoNumberFromString, secondsToHHMMSS } from 'src/app/shared/types/functions';
 import { vhToPx } from 'src/app/shared/types/functions';
 import { Options } from '@angular-slider/ngx-slider';
+import { InteractiveVideoExercise } from 'src/app/shared/types/types';
 
 
 
@@ -20,6 +21,9 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   @ViewChild('videoContainer') videoContainer!: ElementRef;
   @ViewChild('playPauseInput') playPauseInput!:ElementRef;
 
+  @Input() exercise!:any;
+  @Input() questionOn!:boolean;
+
   public player!: YT.Player;
   videoPlayerVars: YT.PlayerVars = {
     fs: 0,
@@ -31,7 +35,6 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   };
   public videoWidth!:number;
   public videoHeight!:number;
-  public questionOn!:boolean;
   private timeInterval: Subscription | undefined;
   public currentTime!:number;
   public currentTimeToShow!:string;
@@ -59,13 +62,15 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     this.videoPlay = false;
     this.isMute = false;
     this.soundImage = '../../../assets/interactive-video/svg/mute.svg'
+
   }
  
 
   ngOnInit(): void {
+    this.videoId = getYouTubeId(this.exercise.videoInfo.videoUrl)
     this.questionOn = false;
-    this.videoId = getYouTubeId('//www.youtube.com/v/qUJYqhKZrwA?autoplay=1&showinfo=0&controls=0')
     this.changeVideo(1, 0)
+    console.log(this.currentExercise.question);
   }
 
 
@@ -88,12 +93,14 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
 
   private changeVideo(id: number, startIn?: number) {
-    this.videoOptions.ceil = this.player.getDuration(); 
-    this.currentTime = Math.round(this.player.getCurrentTime());
-    this.player?.loadVideoById({
-      videoId: this.videoId,
-      startSeconds: startIn
-    });
+    if(this.player) {
+      this.currentTime = Math.round(this.player.getCurrentTime());
+      this.player?.loadVideoById({
+        videoId: this.videoId,
+        startSeconds: startIn
+      });
+    }
+  
     if (!this.videoId) {
       throw new Error('You ask for a change to an unrecognized video with id ' + id);
     }
@@ -139,11 +146,11 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
   }
 
-  public playPauseEvent(isButton:boolean, e:MouseEvent) {
+  public playPauseEvent(e:MouseEvent) {
     this.videoPlay = !this.videoPlay;
     this.videoPlay ? this.player.playVideo() : this.player.pauseVideo();
     this.playPauseInput.nativeElement.checked = !this.videoPlay;
-     e.stopPropagation()
+    e.stopPropagation()
     e.preventDefault()
     
   }
@@ -151,6 +158,11 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   private onTimeUpdated() {
     this.currentTime = Math.round(this.player.getCurrentTime());
     this.currentTimeToShow = secondsToHHMMSS(this.currentTime);
+    const timeInSeconds = HHMMSStoNumberFromString(this.exercise.questionResume[0].appearence)
+    if(timeInSeconds <= this.currentTime) {
+      this.player.pauseVideo();
+      this.questionOn = true;
+    }
   }
 
 
@@ -167,4 +179,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   
 
 
+  get currentExercise(): any {
+    return this.exercise.questionResume[0];
+  }
 }

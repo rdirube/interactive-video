@@ -26,3 +26,8 @@ export function getYouTubeId(url: string) {
       : new Date(seconds * 1000).toISOString().substr(11, 8);
   }
   
+  export function HHMMSStoNumberFromString(hour:string):number {
+    const [ minutes, seconds] = hour.split(':');
+    const totalSeconds = (+minutes) * 60 + (+seconds);
+    return totalSeconds
+  }

@@ -2,7 +2,7 @@ import { EventEmitter, Injectable } from '@angular/core';
 import { AppInfoOxService, ChallengeService, FeedbackOxService, GameActionsService, LevelService, SubLevelService } from 'micro-lesson-core';
 import { ExerciseOx, PreloaderOxService } from 'ox-core';
 import { ExpandableInfo } from 'ox-types';
-import { InteractiveVideoNivelation } from '../types/types';
+import { InteractiveVideoExercise, InteractiveVideoNivelation } from '../types/types';
 
 
 
@@ -10,15 +10,24 @@ import { InteractiveVideoNivelation } from '../types/types';
   providedIn: 'root'
 })
 export class InteractiveVideoChallengeService extends ChallengeService<any,any> {
-  protected generateNextChallenge(subLevel: number): ExerciseOx<any> {
-    throw new Error('Method not implemented.');
-  }
-  protected equalsExerciseData(exerciseData: any, exerciseDoneData: any): boolean {
-    throw new Error('Method not implemented.');
-  }
+
+
+ public currentIndex:number = 0;
+
+
   getMetricsInitialExpandableInfo(): ExpandableInfo {
-    throw new Error('Method not implemented.');
-  }
+    return {
+      exercisesData: [],
+      exerciseMetadata: {
+        exercisesMode: 'cumulative',
+        exercisesQuantity: 'infinite',
+      },
+      globalStatement: [],
+      timeSettings: {
+        timeMode: 'total',
+      },
+    }; 
+   }
 
   public exerciseConfig!: InteractiveVideoNivelation;
 
@@ -31,6 +40,16 @@ export class InteractiveVideoChallengeService extends ChallengeService<any,any> 
     super(gameActionsService, subLevelService, preloaderService);
   }
 
+  protected generateNextChallenge(subLevel: number): ExerciseOx<InteractiveVideoExercise> {
+    return new ExerciseOx (
+      {
+        exercise: this.exerciseConfig.questionResume[this.currentIndex]
+      }, 1 ,{maxTimeToBonus:0, freeTime:0}, []
+    )
+  }
+  protected equalsExerciseData(exerciseData: any, exerciseDoneData: any): boolean {
+    throw new Error('Method not implemented.');
+  }
 
 
   beforeStartGame(): void  {
@@ -39,7 +58,7 @@ export class InteractiveVideoChallengeService extends ChallengeService<any,any> 
     switch (gameCase) {
       case 'created-config':
         this.currentSubLevelPregeneratedExercisesNeeded = 1;
-        // this.exerciseConfig = this.getExerciseConfig();
+        this.exerciseConfig = JSON.parse('{"supportedLanguages":{"es":true,"en":false},"isPublic":false,"ownerUid":"oQPbggIFzLcEHuDjp5ZNbkkVOlZ2","uid":"dUKr5JJrsVDOD47oscop","inheritedPedagogicalObjectives":[],"customTextTranslations":{"es":{"name":{"text":""},"description":{"text":""},"previewData":{"path":""}}},"backupReferences":"","type":"mini-lesson","libraryItemType":"resource","tagIds":{},"properties":{"customConfig":{"customMedia":[],"creatorInfo":{"metricsType":"results","creatorType":"interactive-video-creator","type":"challenges","screenTheme":"executive-functions","exerciseCount":1,"microLessonGameInfo":{"questionResume":[{"id":0,"question":"Testing","options":[{"content":"1","isAnswer":true},{"content":"2","isAnswer":false},{"content":"3","isAnswer":true}],"type":"select","uniqueAnswer":null,"positionInVideo":null,"corrected":false,"appearence":"00:38","rewindAppearence":"00:19"}],"videoInfo":{"videoUrl":"//www.youtube.com/v/qUJYqhKZrwA?autoplay=1&showinfo=0&controls=0","isVideo":true,"startsIn":47,"finishesIn":158,"alias":"Pepe"}},"extraInfo":{"gameUrl":"https://text-structure.web.app","theme":"volcano","exerciseCase":"created","language":"ESP"}},"format":"interactive-video-creator","miniLessonVersion":"with-custom-config-v2","miniLessonUid":"interactive-video-creator","url":"https://ml-screen-manager.firebaseapp.com"}}}').properties.customConfig.creatorInfo?.microLessonGameInfo;
         console.log(this.exerciseConfig);
         break;
       default:
