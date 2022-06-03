@@ -8,8 +8,9 @@
           >
         </mlc-hint-button>
       </div>
-    <app-interactive-video [questionOn]="questionOn" [exercise]="exercise"></app-interactive-video>
-    <mlc-footer class="button-menu" style=" width: 97.5%; height: 12vh; position: absolute; bottom: 0;"
+    
+    <app-interactive-video *ngIf="exercise"  [exercise]="exercise"></app-interactive-video>
+    <mlc-footer  class="button-menu" style=" width: 97.5%; height: 12vh; position: absolute; bottom: 0; z-index: 1000;" [ngStyle]="{'opacity': challengeService.questionOn ? 1 : 0}"
     trySvg="mini-lessons/executive-functions/interactive-video/buttons/check.svg"
     surrenderSvg="mini-lessons/executive-functions/interactive-video/buttons/surrender.svg"
     resultsSvg="mini-lessons/executive-functions/interactive-video/buttons/copa-memotest.svg"

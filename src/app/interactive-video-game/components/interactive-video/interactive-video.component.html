@@ -11,7 +11,7 @@
   </youtube-player>
   <div class="full-size" (click)="playPauseEvent($event)" style="position: absolute;">
   </div>
-   <div *ngIf="!questionOn" fxLayoutAlign="space-evenly center" style="width:100%; height: 10vh;background-image: linear-gradient(180deg, #666666, #000000); z-index: 100; position: absolute; bottom:0 ">
+   <div *ngIf="!challengeService.questionOn" fxLayoutAlign="space-evenly center" style="width:100%; height: 10vh;background-image: linear-gradient(180deg, #666666, #000000); z-index: 100; position: absolute; bottom:0 ">
     <div fxLayoutAlign="center center">
     <div class="rewind-container" (click)="videoTranslation(false)">
       <div class="movement-button"></div>
@@ -37,5 +37,5 @@
     </div>
   </div>  
   
-  <app-activity [exercise]="exercise" *ngIf="questionOn" class="full-size" style=" position: absolute;" ></app-activity> 
+  <app-activity (continueVideo)="continueVideo()" [exercise]="exercise" *ngIf="challengeService.questionOn" class="full-size" style=" position: absolute;" ></app-activity> 
 </div>

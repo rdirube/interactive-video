@@ -37,10 +37,10 @@ export class AppComponent extends BaseMicroLessonApp {
       }
     });
 
-    // preloader.addResourcesToLoad(this.getGameResourcesToLoad());
-    console.log('App component instanciated', this);
-    this.sound.setSoundOn(true);  
-   preloader.loadAll().subscribe(x => this.loaded = true)
+  preloader.addResourcesToLoad(this.getGameResourcesToLoad());
+  console.log('App component instanciated', this);
+  this.sound.setSoundOn(true);  
+  preloader.loadAll().subscribe(x => this.loaded = true)
   }
 
 
@@ -56,7 +56,7 @@ export class AppComponent extends BaseMicroLessonApp {
 
     return svg.map(x => new ResourceOx('interactive-video/svg/' + x, ResourceType.Svg,
     [ScreenTypeOx.Game], true)).concat(svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/interactive-video/buttons/' + x, ResourceType.Svg,
-    [ScreenTypeOx.Game], true)))
+    [ScreenTypeOx.Game], false)))
   }
   title = 'interactive-video';
 }

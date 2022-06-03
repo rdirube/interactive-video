@@ -18,12 +18,12 @@ import {NgxSliderModule} from '@angular-slider/ngx-slider';
     CommonModule,
     SharedModule,
     YouTubePlayerModule,
-    NgxSliderModule
+    NgxSliderModule,
   ],
   exports: [
     GameBodyComponent,
     YouTubePlayerModule,
-    NgxSliderModule
+    NgxSliderModule,
   ]
 })
 export class InterectiveVideoGameModule { }

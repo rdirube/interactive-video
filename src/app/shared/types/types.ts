@@ -1,6 +1,7 @@
 export type InteractionEventType = 'go-to-video' | 'go-to-time' | 'continue' | 'open-interaction' | 'play-sound' | 'none';
 export type   InteractionEventDataType = GoToVideoEvent | GoToTimeEvent  | {};
 export type ExerciseType = 'complete' | 'select';
+export type CorrectionState = 'Not corrected' | boolean;
 
 
 export interface UserVideoFields {

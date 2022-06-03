@@ -10,6 +10,7 @@ import { AnswerService, ChallengeService } from 'micro-lesson-core';
 import { InteractiveVideoChallengeService } from './shared/services/interactive-video-challenge.service';
 import { InteractiveVideoAnswerService } from './shared/services/interactive-video-answer.service';
 import { TranslocoModule } from '@ngneat/transloco';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { TranslocoModule } from '@ngneat/transloco';
     SharedModule,
     InterectiveVideoGameModule,
     HttpClientModule,
-    TranslocoModule
+    TranslocoModule,
+    BrowserAnimationsModule
   ],
   providers: [
     {

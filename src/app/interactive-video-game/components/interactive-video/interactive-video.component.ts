@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { YouTubePlayer } from '@angular/youtube-player';
 import { SubscriberOxDirective } from 'micro-lesson-components';
 import { interval, Subscription, timer } from 'rxjs';
@@ -7,6 +7,8 @@ import { getYouTubeId, HHMMSStoNumberFromString, secondsToHHMMSS } from 'src/app
 import { vhToPx } from 'src/app/shared/types/functions';
 import { Options } from '@angular-slider/ngx-slider';
 import { InteractiveVideoExercise } from 'src/app/shared/types/types';
+import { ChallengeService } from 'micro-lesson-core';
+import { InteractiveVideoChallengeService } from 'src/app/shared/services/interactive-video-challenge.service';
 
 
 
@@ -22,7 +24,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   @ViewChild('playPauseInput') playPauseInput!:ElementRef;
 
   @Input() exercise!:any;
-  @Input() questionOn!:boolean;
+  @Output() questionOnResponse = new EventEmitter<boolean>()
 
   public player!: YT.Player;
   videoPlayerVars: YT.PlayerVars = {
@@ -55,10 +57,9 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     }
   };
 
-  constructor(private interactiveVideo:InteractiveVideoService) { 
+  constructor(private interactiveVideo:InteractiveVideoService, public challengeService:InteractiveVideoChallengeService) { 
     super();
     this.currentTime = 0;
-    this.questionOn = false;
     this.videoPlay = false;
     this.isMute = false;
     this.soundImage = '../../../assets/interactive-video/svg/mute.svg'
@@ -67,10 +68,10 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
  
 
   ngOnInit(): void {
-    this.videoId = getYouTubeId(this.exercise.videoInfo.videoUrl)
-    this.questionOn = false;
+    this.videoId = getYouTubeId(this.challengeService.exerciseConfig.videoInfo.videoUrl)
+    this.challengeService.questionOn = false;
     this.changeVideo(1, 0)
-    console.log(this.currentExercise.question);
+    console.log(this.exercise.exercise.question);
   }
 
 
@@ -126,6 +127,12 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   }
 
 
+  public continueVideo() {
+    timer(2000).subscribe(x => {
+      this.player.playVideo()
+    })
+  }
+
 
   private destroyTimeInterval() {
     this.timeInterval?.unsubscribe();
@@ -158,10 +165,11 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   private onTimeUpdated() {
     this.currentTime = Math.round(this.player.getCurrentTime());
     this.currentTimeToShow = secondsToHHMMSS(this.currentTime);
-    const timeInSeconds = HHMMSStoNumberFromString(this.exercise.questionResume[0].appearence)
-    if(timeInSeconds <= this.currentTime) {
+    const timeInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.appearence);
+    if(timeInSeconds === this.currentTime) {
       this.player.pauseVideo();
-      this.questionOn = true;
+      this.challengeService.questionOn = true;
+      this.questionOnResponse.emit(true);
     }
   }
 
@@ -179,7 +187,5 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   
 
 
-  get currentExercise(): any {
-    return this.exercise.questionResume[0];
-  }
+
 }

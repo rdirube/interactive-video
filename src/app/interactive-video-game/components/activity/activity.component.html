@@ -1,6 +1,17 @@
-<div class="full-size" fxLayout="column" fxLayoutAlign="start center" style="background-color: 'rgba(0, 0, 139,0.9)'; ">
-    <div fxLayoutAlign="center center" style="padding:6vh;margin-top: 3vh; border-radius: 35px;height:20vh; border:2.5px solid white">
-        <ox-text  [originalText]="currentExercise.question"
+<div *ngIf="exercise" class="full-size" fxLayout="column" fxLayoutAlign="start center" style=" position: relative;" [ngStyle]="{'background-color': correctionState === 'Not corrected' ? 'rgba(0, 0, 139,0.9)' : correctionState === true ? 'rgb(152,251,152)' : 'rgba(255, 0, 0)'}">
+    <div  fxLayoutAlign="center center" style="position: relative;">
+    <div fxLayoutAlign="center center" class="question-container" (click)="answerCorrection()">
+        <ox-text class="question"  [originalText]="exercise.exercise.question"
         fontSize="4vh" color="white" font="dinnRegular"></ox-text>
+    </div>
+</div>
+    <div fxLayout="column" fxLayoutAlign="center start" style="width:90%;height: 60vh;transform:translateY(5.5vh)">
+        <div *ngFor="let opt of exercise.exercise.options" class="option-container"  fxLayoutAlign="start center" >
+            <label class="form-control">
+                <input #checkBoxes (change)="correctablePart()" type="checkbox" name="checkbox" />
+              </label>
+              <ox-text  [originalText]="opt.content" style="margin-left: 3vh;"
+              fontSize="5vh" color="white" font="dinnRegular"></ox-text>
+        </div>
     </div>
 </div>
