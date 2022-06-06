@@ -1,8 +1,8 @@
-<div *ngIf="exercise" class="full-size" fxLayout="column" fxLayoutAlign="start center" style=" position: relative;" [ngStyle]="{'background-color': correctionState === 'Not corrected' ? 'rgba(0, 0, 139,0.9)' : correctionState === true ? 'rgb(152,251,152)' : 'rgba(255, 0, 0)'}">
-    <div  fxLayoutAlign="center center" style="position: relative;">
+<div *ngIf="exercise" #activityContainer class="full-size" fxLayout="column" fxLayoutAlign="start center" style=" position: absolute;" [ngStyle]="{'background-color':   challengeService.correctionState === true ? 'rgb(152,251,152)' : 'rgba(0, 135, 228)' }">
+<div *ngIf="composeReady" style="position: relative; width: 75%;" fxLayoutAlign="center center" >
     <div fxLayoutAlign="center center" class="question-container" (click)="answerCorrection()">
         <ox-text class="question"  [originalText]="exercise.exercise.question"
-        fontSize="4vh" color="white" font="dinnRegular"></ox-text>
+        fontSize="4vh" color="white" font="dinnRegular" style="transform: translateY(1.5vh);"></ox-text>
     </div>
 </div>
     <div fxLayout="column" fxLayoutAlign="center start" style="width:90%;height: 60vh;transform:translateY(5.5vh)">

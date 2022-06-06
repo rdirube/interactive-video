@@ -1,5 +1,5 @@
 .option-container {
-    margin: 3vh;
+    margin: 4vh 0;
     width: 100%;
     opacity: 0;
 }
@@ -13,6 +13,7 @@
     grid-template-columns: 1em auto;
     gap: 0.5em;
     color: white;
+    cursor: pointer;
 }
 
 input[type="checkbox"] {
@@ -60,8 +61,7 @@ input[type="checkbox"]:focus {
     height: 17vh;
     border-radius: 35px;
     margin-top: 3vh;
-
-    
+    max-width: 80%;
 }
 
 
@@ -96,7 +96,6 @@ input[type="checkbox"]:focus {
     background: transparent;
     animation: animate 1s ease-in-out forwards;
     border: 2.5px solid transparent;
-
 }
 
 

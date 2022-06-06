@@ -66,6 +66,7 @@ export interface InteractiveVideoExercise {
 }
 
 export interface OptionsAnswer {
+  id:number,
   content:string
   isAnswer:boolean
 }
