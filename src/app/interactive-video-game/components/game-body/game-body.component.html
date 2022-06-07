@@ -1,5 +1,5 @@
 <div class="full-size">
-    <div class="myAbsolute full-width" style="height: 13vh; z-index: 10" fxLayoutAlign="space-between">
+    <div class="myAbsolute full-width" style="height: 13vh; z-index: 1000" fxLayoutAlign="space-between">
         <mlc-to-in-game-menu-button [forceNoAnimations]="true"
           style="width: 13vh;" svgPath="mini-lessons/executive-functions/interactive-video/buttons/menu.svg">
         </mlc-to-in-game-menu-button>
@@ -10,7 +10,7 @@
       </div>
     
     <app-interactive-video #interactiveVideo style="width: 100%; height:100%" *ngIf="exercise"  [exercise]="exercise"></app-interactive-video>
-    <mlc-footer  class="button-menu" style=" width: 97.5%; height: 12vh; position: absolute; bottom: 0; z-index: 1000;" [ngStyle]="{'opacity': challengeService.questionOn ? 1 : 0}"
+    <mlc-footer  class="button-menu" style=" width: 97.5%; height: 12vh; position: absolute; bottom: 0;" [ngStyle]="{'opacity': challengeService.questionOn ? 1 : 0}"
     trySvg="mini-lessons/executive-functions/interactive-video/buttons/check.svg"
     surrenderSvg="mini-lessons/executive-functions/interactive-video/buttons/surrender.svg"
     resultsSvg="mini-lessons/executive-functions/interactive-video/buttons/copa-memotest.svg"

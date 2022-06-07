@@ -30,7 +30,7 @@
     "install": "^0.13.0",
     "lottie-web": "^5.9.4",
     "micro-lesson-components": "^1.1.8",
-    "micro-lesson-core": "^1.1.29",
+    "micro-lesson-core": "^1.1.19",
     "ngox-post-message": "^0.1.0",
     "ngx-lottie": "^8.2.0",
     "ngx-quill": "^16.2.1",

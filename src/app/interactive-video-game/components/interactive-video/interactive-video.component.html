@@ -17,7 +17,7 @@
       <div class="movement-button"></div>
       <div class="movement-button" style="transform:translateX(2vh)"></div>
     </div> 
-    <div class="playpause" (click)="playPauseEvent($event)">
+    <div class="playpause" (click)="playPauseEvent(undefined, $event)">
       <input #playPauseInput type="checkbox" [defaultChecked]="true" value="None" id="playpause" name="check" />
       <label for="playpause" tabindex=1></label>
     </div>

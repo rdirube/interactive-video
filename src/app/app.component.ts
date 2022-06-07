@@ -53,7 +53,6 @@ export class AppComponent extends BaseMicroLessonApp {
   protected getGameResourcesToLoad(): ResourceOx[] {
     const svg:string[] = ['mute.svg', 'unmute.svg'];
     const svgElementos: string[] = ['check.svg', 'copa-memotest.svg', 'next-memotest.svg', 'surrender.svg', 'menu.svg', 'pista.svg', 'sonido-activado.svg'];
-
     return svg.map(x => new ResourceOx('interactive-video/svg/' + x, ResourceType.Svg,
     [ScreenTypeOx.Game], true)).concat(svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/interactive-video/buttons/' + x, ResourceType.Svg,
     [ScreenTypeOx.Game], false)))

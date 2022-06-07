@@ -6,6 +6,8 @@ import { InteractiveVideoExercise, InteractiveVideoNivelation } from 'src/app/sh
 import { filter, take, timer } from 'rxjs';
 import { InteractiveVideoComponent } from '../interactive-video/interactive-video.component';
 import { InteractiveVideoComposeService } from 'src/app/shared/services/interactive-video-compose.service';
+import { EndGameService, GameActionsService, HintService, MicroLessonMetricsService } from 'micro-lesson-core';
+import { ExerciseData, MultipleChoiceSchemaData } from 'ox-types';
 
 @Component({
   selector: 'app-game-body',
@@ -19,15 +21,23 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   public questionOn!:boolean;
   @ViewChild(InteractiveVideoComponent) interactiveVideo! :InteractiveVideoComponent;
 
-  constructor(public challengeService: InteractiveVideoChallengeService, public composeService:InteractiveVideoComposeService) { 
+  constructor(public challengeService: InteractiveVideoChallengeService, public composeService:InteractiveVideoComposeService,
+     private hintService:HintService, private metricsService: MicroLessonMetricsService<any>, public gameActions: GameActionsService<any>, private endGameService:EndGameService) { 
     super()
-    // this.exercise = JSON.parse('{"supportedLanguages":{"es":true,"en":false},"isPublic":false,"ownerUid":"oQPbggIFzLcEHuDjp5ZNbkkVOlZ2","uid":"dUKr5JJrsVDOD47oscop","inheritedPedagogicalObjectives":[],"customTextTranslations":{"es":{"name":{"text":""},"description":{"text":""},"previewData":{"path":""}}},"backupReferences":"","type":"mini-lesson","libraryItemType":"resource","tagIds":{},"properties":{"customConfig":{"customMedia":[],"creatorInfo":{"metricsType":"results","creatorType":"interactive-video-creator","type":"challenges","screenTheme":"executive-functions","exerciseCount":1,"microLessonGameInfo":{"questionResume":[{"id":0,"question":"Seleccionar los números pares menores a 30","options":[{"content":"1","isAnswer":true},{"content":"2","isAnswer":false},{"content":"3","isAnswer":true}, {"content":"4","isAnswer":true} ],"type":"select","uniqueAnswer":null,"positionInVideo":null,"corrected":false,"appearence":"00:07","rewindAppearence":"00:19"}],"videoInfo":{"videoUrl":"//www.youtube.com/v/qUJYqhKZrwA?autoplay=1&showinfo=0&controls=0","isVideo":true,"startsIn":47,"finishesIn":158,"alias":"Pepe"}},"extraInfo":{"gameUrl":"https://text-structure.web.app","theme":"volcano","exerciseCase":"created","language":"ESP"}},"format":"interactive-video-creator","miniLessonVersion":"with-custom-config-v2","miniLessonUid":"interactive-video-creator","url":"https://ml-screen-manager.firebaseapp.com"}}}').properties.customConfig.creatorInfo?.microLessonGameInfo;
     this.questionOn = false;
+    this.endGameService.sendEndEvent = false;
     this.addSubscription(this.challengeService.currentExercise.pipe(filter(x => x !== undefined)),
     (exercise: ExerciseOx<InteractiveVideoExercise>) => {
+      this.addMetric()
+      const exerciseIndex = this.metricsService.currentMetrics.expandableInfo?.exercisesData.length as number;
       this.exercise = exercise.exerciseData;
-      this.challengeService.currentIndex++;
-      this.composeService.continueVideo.emit()
+      console.log(exerciseIndex)
+      if(exerciseIndex === 1 && this.interactiveVideo !== undefined) {
+      this.interactiveVideo.videoSeek(0);
+      this.challengeService.exercisesAreOver = false;
+      }
+      this.hintService.usesPerChallenge = 1;
+      this.composeService.continueVideo.emit();
     });
   }
 
@@ -35,9 +45,35 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   }
 
   
-  public questionActivator(value:boolean) {
-     this.questionOn = value
+  private addMetric(): void {
+    const myMetric: ExerciseData = {
+      schemaType: 'multiple-choice',
+      schemaData: {
+
+      } as MultipleChoiceSchemaData,
+      userInput: {
+        answers: [],
+        requestedHints: 0,
+        surrendered: false
+      },
+      finalStatus: 'to-answer',
+      maxHints: 1,
+      secondsInExercise: 0,
+      initialTime: new Date(),
+      finishTime: undefined as any,
+      firstInteractionTime: undefined as any
+    };
+    this.addSubscription(this.gameActions.actionToAnswer.pipe(take(1)), z => {
+      myMetric.firstInteractionTime = new Date();
+    });
+    this.addSubscription(this.gameActions.checkedAnswer.pipe(take(1)),
+      z => {
+        myMetric.finishTime = new Date();
+        console.log('Finish time');
+      });
+    this.metricsService.addMetric(myMetric as ExerciseData);
   }
+
 
 
 }

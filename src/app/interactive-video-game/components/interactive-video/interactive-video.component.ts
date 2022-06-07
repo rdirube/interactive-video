@@ -7,7 +7,7 @@ import { getYouTubeId, HHMMSStoNumberFromString, secondsToHHMMSS } from 'src/app
 import { vhToPx } from 'src/app/shared/types/functions';
 import { Options } from '@angular-slider/ngx-slider';
 import { InteractiveVideoExercise } from 'src/app/shared/types/types';
-import { ChallengeService, FeedbackOxService, GameActionsService } from 'micro-lesson-core';
+import { ChallengeService, EndGameService, FeedbackOxService, GameActionsService, HintService } from 'micro-lesson-core';
 import { InteractiveVideoChallengeService } from 'src/app/shared/services/interactive-video-challenge.service';
 import { ComposeAnimGenerator, ComposeService } from 'ox-animations';
 import { ActivityComponent } from '../activity/activity.component';
@@ -32,7 +32,6 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
 
   @Input() exercise!: any;
-  @Output() questionOnResponse = new EventEmitter<boolean>()
 
   public player!: YT.Player;
   videoPlayerVars: YT.PlayerVars = {
@@ -53,6 +52,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   public videoPlay!: boolean;
   public isMute!: boolean;
   public soundImage!: string;
+  private timeLeft!:number;
 
   public videoOptions: Options = {
     floor: 0,
@@ -66,7 +66,8 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   };
 
   constructor(private interactiveVideo: InteractiveVideoService, public challengeService: InteractiveVideoChallengeService,
-    private composeService: InteractiveVideoComposeService, public gameActions: GameActionsService<any>) {
+    private composeService: InteractiveVideoComposeService, public gameActions: GameActionsService<any>, private hintService:HintService
+    ,private endGameService:EndGameService) {
     super();
     this.currentTime = 0;
     this.videoPlay = false;
@@ -75,14 +76,20 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     this.addSubscription(this.composeService.continueVideo, x => {
       this.exerciseCompose('0vh','-100vh', false)
     })
-
+    this.addSubscription(this.gameActions.showHint, x => {
+      this.challengeService.questionOn = false;
+      this.rewindQuestionHide();
+      const rewindInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.rewindAppearence);
+      this.videoSeek(rewindInSeconds);
+      this.currentTime -= (this.currentTime - rewindInSeconds)
+    })
   }
 
 
   ngOnInit(): void {
     this.videoId = getYouTubeId(this.challengeService.exerciseConfig.videoInfo.videoUrl)
     this.challengeService.questionOn = false;
-    this.changeVideo(1, 0)
+    this.changeVideo(1, 0);
   }
 
 
@@ -96,12 +103,13 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     this.player = $event.target;
     this.setDuration();
     this.durationToShow = secondsToHHMMSS(this.player.getDuration())
-    this.currentTimeToShow = secondsToHHMMSS(0)
+    this.currentTimeToShow = secondsToHHMMSS(0);
+    this.timeLeft = this.youtubePlayer.getDuration(); 
   }
 
 
   setDuration() {
-    this.videoOptions = { ...this.videoOptions, ceil: this.player.getDuration() };
+    this.videoOptions = { ...this.videoOptions, ceil: this.player.getDuration()};
   }
 
 
@@ -172,7 +180,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   }
 
 
-  private restoreActComponent() {
+  private restoreActComponent():void {
    anime({
     targets: this.activityContainer.nativeElement,
     translateY: ['-100vh', '100vh'],
@@ -187,24 +195,45 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   }
  
 
+  private rewindQuestionHide():void {
+    anime({
+      targets: this.activityContainer.nativeElement,
+      translateY: ['0vh', '100vh'],
+      duration:1,
+      complete: () => {
+        this.activityComponent.rewindRestoreText();
+        this.activityComponent.composeReady = false;
+      }
+    })
+  }
+
 
   public videoTranslation(foward: boolean) {
-    this.youtubePlayer.seekTo(this.currentTime + (foward ? 3 : -3), true)
+    const movement = (foward ? 3 : -3);
+    this.player.seekTo(this.currentTime + movement, true)
+    this.currentTime += movement
   }
 
 
 
   onCueChange($event: YT.OnStateChangeEvent) {
-    this.youtubePlayer.seekTo(10, true);
+    this.player.seekTo(10,true)
     this.youtubePlayer.playVideo();
     this.setDuration()
-
   }
 
-  public playPauseEvent(e?: MouseEvent) {
-    this.videoPlay = !this.videoPlay;
+
+  public videoSeek(value:number) {
+    this.youtubePlayer.seekTo(value, true);
+    this.playPauseEvent(false); 
+  }
+
+  public playPauseEvent(state?:boolean, e?: MouseEvent) {
+    this.videoPlay = state !== undefined ? state : !this.videoPlay;
     this.videoPlay ? this.player.playVideo() : this.player.pauseVideo();
-    this.playPauseInput.nativeElement.checked = !this.videoPlay;
+    if(this.playPauseInput) {
+      this.playPauseInput.nativeElement.checked = !this.videoPlay;
+    }
     if (e) {
       e?.stopPropagation()
       e?.preventDefault()
@@ -216,14 +245,16 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     this.currentTime = Math.round(this.player.getCurrentTime());
     this.currentTimeToShow = secondsToHHMMSS(this.currentTime);
     const timeInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.appearence);
-    if (timeInSeconds === this.currentTime) {
-      this.playPauseEvent();
+    this.timeLeft = this.youtubePlayer.getDuration() - this.currentTime;
+    if (timeInSeconds <= this.currentTime && !this.challengeService.exercisesAreOver) {
       this.exerciseCompose('100vh', '0vh', true);
+      this.playPauseEvent();
       this.challengeService.questionOn = true;
-      this.questionOnResponse.emit(true);
     } 
-    if(this.player.getDuration() <= this.currentTime) {
+    if(this.currentTime === this.youtubePlayer.getDuration()) {
       this.gameActions.microLessonCompleted.emit();
+      this.endGameService.gameIsEnded();  
+      this.gameActions.goToResults.emit();
     }
   }
 

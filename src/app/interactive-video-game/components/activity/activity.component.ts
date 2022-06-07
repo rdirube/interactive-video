@@ -1,7 +1,7 @@
 import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { CorrectionState, InteractiveVideoExercise, OptionsAnswer } from 'src/app/shared/types/types';
 import anime from 'animejs';
-import { timer } from 'rxjs';
+import { ArgumentOutOfRangeError, timer } from 'rxjs';
 import { FeedbackOxService, GameActionsService } from 'micro-lesson-core';
 import { SubscriberOxDirective } from 'micro-lesson-components';
 import { CorrectablePart, isEven, PartCorrectness, PartFormat } from 'ox-types';
@@ -111,12 +111,25 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
   }
 
 
+  public rewindRestoreText():void {
+    anime({
+      targets:'.option-container',
+      opacity: [1,0],
+      duration:1
+    })
+    anime({
+      targets:'.question',
+      opacity: [1,0],
+      duration:1,
+    })
+  }
+
 
   public correctablePart(): void {
     const values = this.checkedAndCorrect();
     const valuesIndex = this.checkedAndCorrectIndex();
-    const correctablePart = values.correct.map((ans:any, i:any) => {
-      const correctnessToReturn = valuesIndex.checked.some(x => x == ans.id) ? true : false;
+    const correctablePart = (this.comparisson() ? values.correct : valuesIndex.checked).map((ans:any, i:any) => {
+    const correctnessToReturn = (this.comparisson() ? valuesIndex.checked : values.correct).some(x => (this.comparisson() ? ans.id : ans) == (this.comparisson() ? x : (x as OptionsAnswer).id)) ? true : false;
       return {
         correctness: (correctnessToReturn ? 'correct' : 'wrong') as PartCorrectness,
         parts: [
@@ -127,10 +140,17 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
         ]
       }
     })
+
     this.answerService.currentAnswer = {
       parts: correctablePart as CorrectablePart[],
       type:'parts'
     }
+  }
+
+
+  private comparisson(): boolean {
+    const values = this.checkedAndCorrect();
+    return (values.checked.length <= values.correct.length)
   }
 
 
@@ -147,6 +167,7 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
 
     })
   }
+  
   
 
   surrender():void {
