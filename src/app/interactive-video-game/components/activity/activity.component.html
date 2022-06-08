@@ -8,7 +8,7 @@
     <div fxLayout="column" fxLayoutAlign="center start" style="width:90%;height: 60vh;transform:translateY(5.5vh)">
         <div *ngFor="let opt of exercise.exercise.options" class="option-container"  fxLayoutAlign="start center" >
             <label class="form-control">
-                <input #checkBoxes (change)="correctablePart()" type="checkbox" name="checkbox" />
+                <input #checkBoxes style="cursor:pointer;"  (click)="playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/selectedInput.mp3')" (change)="correctablePart()" type="checkbox" name="checkbox" />
               </label>
               <ox-text  [originalText]="opt.content" style="margin-left: 3vh;"
               fontSize="5vh" color="white" font="dinnRegular"></ox-text>

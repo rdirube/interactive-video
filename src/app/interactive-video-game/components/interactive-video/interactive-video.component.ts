@@ -7,12 +7,13 @@ import { getYouTubeId, HHMMSStoNumberFromString, secondsToHHMMSS } from 'src/app
 import { vhToPx } from 'src/app/shared/types/functions';
 import { Options } from '@angular-slider/ngx-slider';
 import { InteractiveVideoExercise } from 'src/app/shared/types/types';
-import { ChallengeService, EndGameService, FeedbackOxService, GameActionsService, HintService } from 'micro-lesson-core';
+import { ChallengeService, EndGameService, FeedbackOxService, GameActionsService, HintService, SoundOxService } from 'micro-lesson-core';
 import { InteractiveVideoChallengeService } from 'src/app/shared/services/interactive-video-challenge.service';
 import { ComposeAnimGenerator, ComposeService } from 'ox-animations';
 import { ActivityComponent } from '../activity/activity.component';
 import anime from 'animejs';
 import { InteractiveVideoComposeService } from 'src/app/shared/services/interactive-video-compose.service';
+import { ScreenTypeOx } from 'ox-types';
 
 
 
@@ -37,7 +38,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   videoPlayerVars: YT.PlayerVars = {
     fs: 0,
     showinfo: 0,
-    start: 2,
+    start: 0,
     autoplay: 0,
     controls: 0,
     rel: 0,
@@ -67,16 +68,17 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
   constructor(private interactiveVideo: InteractiveVideoService, public challengeService: InteractiveVideoChallengeService,
     private composeService: InteractiveVideoComposeService, public gameActions: GameActionsService<any>, private hintService:HintService
-    ,private endGameService:EndGameService) {
+    ,private endGameService:EndGameService, private soundService: SoundOxService) {
     super();
     this.currentTime = 0;
     this.videoPlay = false;
     this.isMute = false;
-    this.soundImage = '../../../assets/interactive-video/svg/mute.svg';
+    this.soundImage = '../../../assets/interactive-video/svg/unmute.svg';
     this.addSubscription(this.composeService.continueVideo, x => {
       this.exerciseCompose('0vh','-100vh', false)
     })
     this.addSubscription(this.gameActions.showHint, x => {
+      this.playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/hint.mp3')
       this.challengeService.questionOn = false;
       this.rewindQuestionHide();
       const rewindInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.rewindAppearence);
@@ -145,7 +147,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
   private setTimeInterval() {
     this.destroyTimeInterval();
-    this.timeInterval = interval(1000).subscribe(z => this.onTimeUpdated());
+    this.timeInterval = interval(500).subscribe(z => this.onTimeUpdated());
   }
 
 
@@ -164,6 +166,9 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
   public exerciseCompose(from:string, to:string, compose:boolean) {
     anime({
+      begin:() => {
+        this.playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/woosh.mp3')
+      },
       targets: this.activityContainer.nativeElement,
       translateY: [from, to],
       duration:compose ? 1000 : 700,
@@ -211,7 +216,9 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   public videoTranslation(foward: boolean) {
     const movement = (foward ? 3 : -3);
     this.player.seekTo(this.currentTime + movement, true)
-    this.currentTime += movement
+    this.currentTime += movement;
+    this.currentTimeToShow = secondsToHHMMSS(this.currentTime)
+
   }
 
 
@@ -229,6 +236,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   }
 
   public playPauseEvent(state?:boolean, e?: MouseEvent) {
+    this.player.playVideoAt(0)
     this.videoPlay = state !== undefined ? state : !this.videoPlay;
     this.videoPlay ? this.player.playVideo() : this.player.pauseVideo();
     if(this.playPauseInput) {
@@ -240,21 +248,26 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     }
   }
 
+  private playLoadedSound(sound?: string) {
+    if(sound)
+    this.soundService.playSoundEffect(sound, ScreenTypeOx.Game);
+  }
+
 
   private onTimeUpdated() {
-    this.currentTime = Math.round(this.player.getCurrentTime());
+    this.currentTime = Math.ceil(this.player.getCurrentTime() + 0.5);
     this.currentTimeToShow = secondsToHHMMSS(this.currentTime);
     const timeInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.appearence);
-    this.timeLeft = this.youtubePlayer.getDuration() - this.currentTime;
+    const duration = Math.floor(this.youtubePlayer.getDuration())
+    console.log(duration, this.currentTime)
     if (timeInSeconds <= this.currentTime && !this.challengeService.exercisesAreOver) {
       this.exerciseCompose('100vh', '0vh', true);
       this.playPauseEvent();
       this.challengeService.questionOn = true;
     } 
-    if(this.currentTime === this.youtubePlayer.getDuration()) {
+    if(this.currentTime >= duration) {
       this.gameActions.microLessonCompleted.emit();
-      this.endGameService.gameIsEnded();  
-      this.gameActions.goToResults.emit();
+      this.playPauseEvent(false)
     }
   }
 

@@ -47,7 +47,9 @@ export class InteractiveVideoChallengeService extends ChallengeService<Interacti
     if(this.exerciseIndex > this.exerciseConfig.questionResume.length - 1) {
        this.exerciseIndex = this.exerciseConfig.questionResume.length - 1;
        this.exercisesAreOver = true;
-    } 
+    } else if (this.exerciseIndex === 0) {
+      this.exercisesAreOver = false;
+    }
     return new ExerciseOx (
       {
         exercise: this.exerciseConfig.questionResume[this.exerciseIndex]
@@ -65,7 +67,7 @@ export class InteractiveVideoChallengeService extends ChallengeService<Interacti
     switch (gameCase) {
       case 'created-config':
         this.currentSubLevelPregeneratedExercisesNeeded = 1;
-        this.exerciseConfig = JSON.parse('{"supportedLanguages":{"es":true,"en":false},"isPublic":false,"ownerUid":"oQPbggIFzLcEHuDjp5ZNbkkVOlZ2","uid":"dUKr5JJrsVDOD47oscop","inheritedPedagogicalObjectives":[],"customTextTranslations":{"es":{"name":{"text":""},"description":{"text":""},"previewData":{"path":""}}},"backupReferences":"","type":"mini-lesson","libraryItemType":"resource","tagIds":{},"properties":{"customConfig":{"customMedia":[],"creatorInfo":{"metricsType":"results","creatorType":"interactive-video-creator","type":"challenges","screenTheme":"executive-functions","exerciseCount":1,"microLessonGameInfo":{"questionResume":[{"id":0,"question":"Selecciona los numeros mayores a 4 y menores a 8, que cumplan con el requisito de ser multiplos de 2.","options":[{"id":"0","content":"1","isAnswer":true},{"id":"1","content":"2","isAnswer":false},{"id":"2","content":"3","isAnswer":true},{"id":"3","content":"4","isAnswer":true}],"type":"select","uniqueAnswer":null,"positionInVideo":null,"corrected":false,"appearence":"00:05","rewindAppearence":"00:03"}, {"id":0,"question":"Selecciona los numeros mayores a 4 y menores a 8.","options":[{"id":"0","content":"5","isAnswer":false},{"id":"1","content":"6","isAnswer":true},{"id":"2","content":"7","isAnswer":false},{"id":"3","content":"8","isAnswer":false}],"type":"select","uniqueAnswer":null,"positionInVideo":null,"corrected":false,"appearence":"00:12","rewindAppearence":"00:05"} ],"videoInfo":{"videoUrl":"//www.youtube.com/watch?v=6EM9qrXRJhk&ab_channel=JacquiSive","isVideo":true,"startsIn":47,"finishesIn":158,"alias":"Pepe"}},"extraInfo":{"gameUrl":"https://text-structure.web.app","theme":"volcano","exerciseCase":"created","language":"ESP"}},"format":"interactive-video-creator","miniLessonVersion":"with-custom-config-v2","miniLessonUid":"interactive-video-creator","url":"https://ml-screen-manager.firebaseapp.com"}}}').properties.customConfig.creatorInfo?.microLessonGameInfo;
+        this.exerciseConfig = this.getExerciseConfig();;
         console.log(this.exerciseConfig);
         break;
       default:
@@ -73,6 +75,10 @@ export class InteractiveVideoChallengeService extends ChallengeService<Interacti
     }  
   }
 
+
+  public getExerciseConfig(): any {
+    return this.appInfo.microLessonInfo.creatorInfo?.microLessonGameInfo;
+  }
 
 
 }

@@ -40,7 +40,7 @@ export class AppComponent extends BaseMicroLessonApp {
   preloader.addResourcesToLoad(this.getGameResourcesToLoad());
   console.log('App component instanciated', this);
   this.sound.setSoundOn(true);  
-  preloader.loadAll().subscribe(x => this.loaded = true)
+  // preloader.loadAll().subscribe(x => this.loaded = true)
   }
 
 
@@ -53,9 +53,11 @@ export class AppComponent extends BaseMicroLessonApp {
   protected getGameResourcesToLoad(): ResourceOx[] {
     const svg:string[] = ['mute.svg', 'unmute.svg'];
     const svgElementos: string[] = ['check.svg', 'copa-memotest.svg', 'next-memotest.svg', 'surrender.svg', 'menu.svg', 'pista.svg', 'sonido-activado.svg'];
+    const sounds:string[] = ['click.mp3', 'rightAnswer.mp3', 'woosh.mp3', 'wrongAnswer.mp3', 'clickSurrender.mp3', 'cantClick.mp3',  'hint.mp3','selectedInput.mp3'];
+
     return svg.map(x => new ResourceOx('interactive-video/svg/' + x, ResourceType.Svg,
     [ScreenTypeOx.Game], true)).concat(svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/interactive-video/buttons/' + x, ResourceType.Svg,
-    [ScreenTypeOx.Game], false)))
+    [ScreenTypeOx.Game], false)).concat(sounds.map(x => new ResourceOx('mini-lessons/executive-functions/interactive-video/sounds/' + x , ResourceType.Audio, [ScreenTypeOx.Game], false))))
   }
   title = 'interactive-video';
 }

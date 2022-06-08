@@ -6,8 +6,8 @@ import { InteractiveVideoExercise, InteractiveVideoNivelation } from 'src/app/sh
 import { filter, take, timer } from 'rxjs';
 import { InteractiveVideoComponent } from '../interactive-video/interactive-video.component';
 import { InteractiveVideoComposeService } from 'src/app/shared/services/interactive-video-compose.service';
-import { EndGameService, GameActionsService, HintService, MicroLessonMetricsService } from 'micro-lesson-core';
-import { ExerciseData, MultipleChoiceSchemaData } from 'ox-types';
+import { EndGameService, GameActionsService, HintService, MicroLessonCommunicationService, MicroLessonMetricsService } from 'micro-lesson-core';
+import { ExerciseData, GameAskForScreenChangeBridge, MultipleChoiceSchemaData, ScreenTypeOx } from 'ox-types';
 
 @Component({
   selector: 'app-game-body',
@@ -22,23 +22,33 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
   @ViewChild(InteractiveVideoComponent) interactiveVideo! :InteractiveVideoComponent;
 
   constructor(public challengeService: InteractiveVideoChallengeService, public composeService:InteractiveVideoComposeService,
-     private hintService:HintService, private metricsService: MicroLessonMetricsService<any>, public gameActions: GameActionsService<any>, private endGameService:EndGameService) { 
+     private hintService:HintService, private metricsService: MicroLessonMetricsService<any>, public gameActions: GameActionsService<any>, private endGameService:EndGameService,
+     private microLessonCommunication: MicroLessonCommunicationService<any>,) { 
     super()
     this.questionOn = false;
     this.endGameService.sendEndEvent = false;
     this.addSubscription(this.challengeService.currentExercise.pipe(filter(x => x !== undefined)),
     (exercise: ExerciseOx<InteractiveVideoExercise>) => {
-      this.addMetric()
-      const exerciseIndex = this.metricsService.currentMetrics.expandableInfo?.exercisesData.length as number;
+     
       this.exercise = exercise.exerciseData;
-      console.log(exerciseIndex)
+      if(!this.challengeService.exercisesAreOver) {
+        this.addMetric()
+      }
+      const exerciseIndex = this.metricsService.currentMetrics.expandableInfo?.exercisesData.length as number;
       if(exerciseIndex === 1 && this.interactiveVideo !== undefined) {
       this.interactiveVideo.videoSeek(0);
-      this.challengeService.exercisesAreOver = false;
+      } else {
+        this.composeService.continueVideo.emit();
       }
       this.hintService.usesPerChallenge = 1;
-      this.composeService.continueVideo.emit();
     });
+    this.addSubscription(this.gameActions.microLessonCompleted, z => {     
+      timer(100).subscribe(zzz => {
+        this.microLessonCommunication.sendMessageMLToManager(GameAskForScreenChangeBridge,
+          ScreenTypeOx.GameComplete);
+      })});
+
+
   }
 
   ngOnInit(): void {

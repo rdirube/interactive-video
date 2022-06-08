@@ -2,9 +2,9 @@ import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, I
 import { CorrectionState, InteractiveVideoExercise, OptionsAnswer } from 'src/app/shared/types/types';
 import anime from 'animejs';
 import { ArgumentOutOfRangeError, timer } from 'rxjs';
-import { FeedbackOxService, GameActionsService } from 'micro-lesson-core';
+import { FeedbackOxService, GameActionsService, SoundOxService } from 'micro-lesson-core';
 import { SubscriberOxDirective } from 'micro-lesson-components';
-import { CorrectablePart, isEven, PartCorrectness, PartFormat } from 'ox-types';
+import { CorrectablePart, isEven, PartCorrectness, PartFormat, ScreenTypeOx } from 'ox-types';
 import { InteractiveVideoAnswerService } from 'src/app/shared/services/interactive-video-answer.service';
 import { InteractiveVideoChallengeService } from 'src/app/shared/services/interactive-video-challenge.service';
 import { ComposeAnimGenerator, ComposeService } from 'ox-animations';
@@ -27,7 +27,7 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
  
   constructor(public gameActions: GameActionsService<any>, private answerService:InteractiveVideoAnswerService,
      public challengeService: InteractiveVideoChallengeService, private feedbackService:FeedbackOxService,
-     private composeService: ComposeService<any>) { 
+     private composeService: ComposeService<any>, private soundService: SoundOxService) { 
     super();
     this.composeReady = false;
     this.addSubscription(this.gameActions.checkedAnswer, x => {  
@@ -58,6 +58,7 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
   public answerCorrection():void {
    const values = this.checkedAndCorrectIndex();
    if(values.correct.every((b:any,i:any) => b === values.checked[i])) {
+    this.playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/rightAnswer.mp3')
      this.challengeService.correctionState = true;
    } else {
     this.wrongAnimation()
@@ -160,17 +161,24 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
       return { value: isEven(i) ? 2 : -2, duration: 50 };
     }).concat([{ value: 0, duration: 50 }]);
     anime({
+      begin: () => {
+        this.playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/wrongAnswer.mp3')
+      },
       targets: checkedBoxes.map(b => b.nativeElement),
       rotate
     });
-    anime({
-
-    })
   }
   
   
+  public playLoadedSound(sound?: string) {
+    if(sound)
+    this.soundService.playSoundEffect(sound, ScreenTypeOx.Game);
+  }
+
+
 
   surrender():void {
+    this.playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/clickSurrender.mp3')
    const values = this.checkedAndCorrectIndex();
    this.checkBoxesArray.forEach(b => b.nativeElement.checked = false);
    values.correct.forEach(b => this.checkBoxesArray[b].nativeElement.checked = true);
