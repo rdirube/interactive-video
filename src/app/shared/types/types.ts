@@ -12,6 +12,10 @@ export interface UserVideoFields {
     isVideo:boolean
   }
 
+  export interface TrimmedTime {
+    min:number;
+    max:number
+  }
 
 
   export interface UserVideoFields {
@@ -19,7 +23,8 @@ export interface UserVideoFields {
     finishesIn:number;
     videoUrl: string;
     alias: string;
-    isVideo:boolean
+    isVideo:boolean;
+    trimmedPeriods:TrimmedTime[];
   }
 
   export interface InteractionEventData {

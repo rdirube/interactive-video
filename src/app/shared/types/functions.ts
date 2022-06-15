@@ -12,7 +12,8 @@ export function getYouTubeId(url: string) {
       startsIn: 0,
       finishesIn: 0,
       alias: 'Pepe',
-      isVideo:true
+      isVideo:true,
+      trimmedPeriods:[]
     };
   }
 

@@ -54,6 +54,11 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   public isMute!: boolean;
   public soundImage!: string;
   private timeLeft!:number;
+  public trimmedIndex!:number;
+  public integratedVideoTime!:number;
+  private timeOutVideo!:any;
+  public pauseTime!:boolean;
+  private accumulator!:number;
 
   public videoOptions: Options = {
     floor: 0,
@@ -73,6 +78,10 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     this.currentTime = 0;
     this.videoPlay = false;
     this.isMute = false;
+    this.pauseTime = false;
+    this.trimmedIndex = 0;
+    this.integratedVideoTime = 0;
+    this.accumulator = 0;
     this.soundImage = '../../../assets/interactive-video/svg/unmute.svg';
     this.addSubscription(this.composeService.continueVideo, x => {
       this.exerciseCompose('0vh','-100vh', false)
@@ -89,7 +98,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
 
   ngOnInit(): void {
-    this.videoId = getYouTubeId(this.challengeService.exerciseConfig.videoInfo.videoUrl)
+    this.videoId = getYouTubeId(this.videoInfo.videoUrl)
     this.challengeService.questionOn = false;
     this.changeVideo(1, 0);
   }
@@ -99,25 +108,29 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     // this.composeService.addComposable(this.activityContainer.nativeElement, ComposeAnimGenerator.fromBot('100vh'), ComposeAnimGenerator.toTop('0vh'), false);
     this.videoHeight = document.body.clientHeight
     this.videoWidth = document.body.clientWidth;
+
   }
 
   onReady($event: YT.PlayerEvent) {
     this.player = $event.target;
+    this.playPauseEvent(false)
+    this.player.seekTo(this.videoInfo.trimmedPeriods[0].min,true);
     this.setDuration();
-    this.durationToShow = secondsToHHMMSS(this.player.getDuration())
+    this.durationToShow = secondsToHHMMSS(this.videoInfo.finishesIn)
     this.currentTimeToShow = secondsToHHMMSS(0);
-    this.timeLeft = this.youtubePlayer.getDuration(); 
+    this.timeLeft = this.videoInfo.finishesIn; 
   }
 
 
   setDuration() {
-    this.videoOptions = { ...this.videoOptions, ceil: this.player.getDuration()};
+    console.log(this.exercise);
+    this.videoOptions = { ...this.videoOptions, ceil: this.videoInfo.finishesIn}
   }
 
 
   private changeVideo(id: number, startIn?: number) {
     if (this.player) {
-      this.currentTime = Math.round(this.player.getCurrentTime());
+      this.currentTime = Math.round(this.integratedVideoTime);
       this.player?.loadVideoById({
         videoId: this.videoId,
         startSeconds: startIn
@@ -151,12 +164,34 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   }
 
 
+  get videoInfo() {
+    return this.challengeService.exerciseConfig.videoInfo;
+  }
+
   public continueVideo() {
     timer(1000).subscribe(x => {
       this.playPauseEvent();
     })
   }
 
+
+  public timerOn(state:boolean) {
+    this.pauseInterval(state)
+    clearInterval(this.timeOutVideo)  
+    this.timeOutVideo = setInterval(()=> this.counterOn(), 1000);
+   }
+  
+  
+    public pauseInterval(state:boolean) {
+      this.pauseTime = state;
+    }
+  
+  
+    private counterOn():void {
+      if(!this.pauseTime) {
+        this.integratedVideoTime++
+      }
+    }
 
   private destroyTimeInterval() {
     this.timeInterval?.unsubscribe();
@@ -235,9 +270,10 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     this.playPauseEvent(false); 
   }
 
+
   public playPauseEvent(state?:boolean, e?: MouseEvent) {
-    this.player.playVideoAt(0)
     this.videoPlay = state !== undefined ? state : !this.videoPlay;
+    this.timerOn(this.videoPlay);
     this.videoPlay ? this.player.playVideo() : this.player.pauseVideo();
     if(this.playPauseInput) {
       this.playPauseInput.nativeElement.checked = !this.videoPlay;
@@ -254,18 +290,27 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   }
 
 
+
+
   private onTimeUpdated() {
-    this.currentTime = Math.ceil(this.player.getCurrentTime() + 0.5);
-    this.currentTimeToShow = secondsToHHMMSS(this.currentTime);
+    this.currentTimeToShow = secondsToHHMMSS(this.integratedVideoTime);
     const timeInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.appearence);
-    const duration = Math.floor(this.youtubePlayer.getDuration())
-    console.log(duration, this.currentTime)
-    if (timeInSeconds <= this.currentTime && !this.challengeService.exercisesAreOver) {
+    const duration = Math.floor(this.videoInfo.finishesIn);
+    const maxMinDiffPerTrim = this.videoInfo.trimmedPeriods[this.trimmedIndex].max - this.videoInfo.trimmedPeriods[this.trimmedIndex].min
+    const conditionToNextTrimm = maxMinDiffPerTrim + this.accumulator
+    console.log(this.integratedVideoTime);
+    if(conditionToNextTrimm <= this.integratedVideoTime) {
+      this.accumulator += maxMinDiffPerTrim
+      this.trimmedIndex++;
+      this.player.seekTo(this.videoInfo.trimmedPeriods[this.trimmedIndex].min, true)
+    }
+    if (timeInSeconds <= this.integratedVideoTime && !this.challengeService.exercisesAreOver) {
+      console.log('activada')
       this.exerciseCompose('100vh', '0vh', true);
       this.playPauseEvent();
       this.challengeService.questionOn = true;
     } 
-    if(this.currentTime >= duration) {
+    if(this.integratedVideoTime >= duration) {
       this.gameActions.microLessonCompleted.emit();
       this.playPauseEvent(false)
     }
