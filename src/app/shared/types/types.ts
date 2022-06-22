@@ -2,7 +2,7 @@ export type InteractionEventType = 'go-to-video' | 'go-to-time' | 'continue' | '
 export type   InteractionEventDataType = GoToVideoEvent | GoToTimeEvent  | {};
 export type ExerciseType = 'complete' | 'select';
 export type CorrectionState = 'Not corrected' | boolean;
-
+export type InputType = 'checkbox' | 'radio';
 
 export interface UserVideoFields {
     startsIn: number;
@@ -64,6 +64,13 @@ export interface QuestionResume {
   corrected:boolean,
   appearence:string;
   rewindAppearence:string;
+  appearenceByTrim:AppearenceByTrim;
+  rewindByTrim:AppearenceByTrim;
+}
+
+export interface AppearenceByTrim {
+  trim:number,
+  appearence:number
 }
 
 export interface InteractiveVideoExercise {

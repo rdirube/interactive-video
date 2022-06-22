@@ -26,8 +26,14 @@
       <div class="movement-button" style="transform:translateX(2vh)"></div>
     </div>
   </div>
-    <div  class="custom-slider" style=" width:60%; transform: translateY(-1.4vh);">
-      <ngx-slider [options]="videoOptions" [(value)]="integratedVideoTime"></ngx-slider>
+    <div #slider class="custom-slider" style=" width:60%; transform: translateY(-1.4vh);">
+      <ngx-slider  [options]="videoOptions" style="transform: translateY(1vh);" [(value)]="integratedVideoTime"></ngx-slider>
+      <div style="
+      height: 1.5vh;
+       position: relative; background-color: transparent;" [ngStyle]="{'width': sliderWidth}" fxLayoutAlign="start center">
+    <div *ngFor="let ex of challengeService.exerciseConfig.questionResume; let i = index" style="width:0.4vh; height:1.5vh; background-color:rgb(255, 230, 0)" [ngStyle]="{'transform': 'translateX(' + ex.positionInVideo + 'px)'}">
+   </div>
+   </div>     
     </div>
     <div style="color:#CDCDCD; transform: translateY(0.8vh); font-size: 2.5vh;">
       <p>{{currentTimeToShow}} / {{durationToShow}}</p>

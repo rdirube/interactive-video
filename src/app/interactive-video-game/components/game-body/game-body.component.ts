@@ -28,16 +28,18 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     this.questionOn = false;
     this.endGameService.sendEndEvent = false;
     this.addSubscription(this.challengeService.currentExercise.pipe(filter(x => x !== undefined)),
-    (exercise: ExerciseOx<InteractiveVideoExercise>) => {
-     
+    (exercise: ExerciseOx<InteractiveVideoExercise>) => {   
       this.exercise = exercise.exerciseData;
       if(!this.challengeService.exercisesAreOver) {
         this.addMetric()
       }
       const exerciseIndex = this.metricsService.currentMetrics.expandableInfo?.exercisesData.length as number;
-      if(exerciseIndex === 1 && this.interactiveVideo !== undefined) {
-      this.interactiveVideo.videoSeek(0);
-      } else {
+      if(exerciseIndex === 1 && this.interactiveVideo !== undefined) {      
+      this.interactiveVideo.videoSeek(this.challengeService.exerciseConfig.videoInfo.trimmedPeriods[0].min);
+      this.interactiveVideo.trimmedIndex = 0;
+       this.interactiveVideo.integratedVideoTime = 0;
+       this.interactiveVideo.accumulator = 0; 
+    } else {
         this.composeService.continueVideo.emit();
       }
       this.hintService.usesPerChallenge = 1;

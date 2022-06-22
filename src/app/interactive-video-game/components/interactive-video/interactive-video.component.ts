@@ -6,7 +6,7 @@ import { InteractiveVideoService } from 'src/app/shared/services/interactive-vid
 import { getYouTubeId, HHMMSStoNumberFromString, secondsToHHMMSS } from 'src/app/shared/types/functions';
 import { vhToPx } from 'src/app/shared/types/functions';
 import { Options } from '@angular-slider/ngx-slider';
-import { InteractiveVideoExercise } from 'src/app/shared/types/types';
+import { InteractiveVideoExercise, QuestionResume } from 'src/app/shared/types/types';
 import { ChallengeService, EndGameService, FeedbackOxService, GameActionsService, HintService, SoundOxService } from 'micro-lesson-core';
 import { InteractiveVideoChallengeService } from 'src/app/shared/services/interactive-video-challenge.service';
 import { ComposeAnimGenerator, ComposeService } from 'ox-animations';
@@ -29,6 +29,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   @ViewChild('playPauseInput') playPauseInput!: ElementRef;
   @ViewChild('activityContainer') activityContainer!: ElementRef;
   @ViewChild(ActivityComponent) activityComponent!: ActivityComponent;
+  @ViewChild('slider', { static: false }) slider!: ElementRef;
 
 
 
@@ -58,7 +59,8 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   public integratedVideoTime!:number;
   private timeOutVideo!:any;
   public pauseTime!:boolean;
-  private accumulator!:number;
+  public accumulator!:number;
+  public sliderWidth!:number; 
 
   public videoOptions: Options = {
     floor: 0,
@@ -92,7 +94,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
       this.rewindQuestionHide();
       const rewindInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.rewindAppearence);
       this.videoSeek(rewindInSeconds);
-      this.currentTime -= (this.currentTime - rewindInSeconds)
+      this.integratedVideoTime -= (this.integratedVideoTime - rewindInSeconds)
     })
   }
 
@@ -105,16 +107,14 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
 
   ngAfterViewInit(): void {
-    // this.composeService.addComposable(this.activityContainer.nativeElement, ComposeAnimGenerator.fromBot('100vh'), ComposeAnimGenerator.toTop('0vh'), false);
     this.videoHeight = document.body.clientHeight
     this.videoWidth = document.body.clientWidth;
-
+    this.sliderWidth = this.slider.nativeElement.offsetWidth;
+    this.setPosInVideo(this.challengeService.exerciseConfig.questionResume)
   }
 
   onReady($event: YT.PlayerEvent) {
     this.player = $event.target;
-    this.playPauseEvent(false)
-    this.player.seekTo(this.videoInfo.trimmedPeriods[0].min,true);
     this.setDuration();
     this.durationToShow = secondsToHHMMSS(this.videoInfo.finishesIn)
     this.currentTimeToShow = secondsToHHMMSS(0);
@@ -123,14 +123,16 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
 
   setDuration() {
-    console.log(this.exercise);
     this.videoOptions = { ...this.videoOptions, ceil: this.videoInfo.finishesIn}
+    this.player.seekTo(this.videoInfo.trimmedPeriods[0].min,true);
+    this.playPauseEvent(false)
+
   }
 
 
   private changeVideo(id: number, startIn?: number) {
     if (this.player) {
-      this.currentTime = Math.round(this.integratedVideoTime);
+      this.integratedVideoTime = Math.round(this.integratedVideoTime);
       this.player?.loadVideoById({
         videoId: this.videoId,
         startSeconds: startIn
@@ -174,6 +176,19 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     })
   }
 
+  private setPosInVideo(exercises: QuestionResume[]) {
+    exercises.forEach(e => {
+      const questionAppearence = e.appearenceByTrim.appearence + (e.appearenceByTrim.trim > 0 ? this.trimmedAccValue(e.appearenceByTrim.trim) : 0)
+       const percetangeToMove = questionAppearence / this.videoInfo.finishesIn;
+       e.positionInVideo = percetangeToMove * this.sliderWidth
+    })
+  }
+
+  
+  private trimmedAccValue(index: number): number {
+    return this.challengeService.exerciseConfig.videoInfo.trimmedPeriods.filter((t, i) => i < index).map(t => t.max - t.min).reduce((acc, b) => acc + b)
+  }
+
 
   public timerOn(state:boolean) {
     this.pauseInterval(state)
@@ -189,7 +204,8 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   
     private counterOn():void {
       if(!this.pauseTime) {
-        this.integratedVideoTime++
+        this.integratedVideoTime++;
+        this.currentTimeToShow = secondsToHHMMSS(this.integratedVideoTime);
       }
     }
 
@@ -272,8 +288,8 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
 
   public playPauseEvent(state?:boolean, e?: MouseEvent) {
-    this.videoPlay = state !== undefined ? state : !this.videoPlay;
-    this.timerOn(this.videoPlay);
+    this.videoPlay = state !== undefined ? state : !this.videoPlay ;
+    this.timerOn(!this.videoPlay);
     this.videoPlay ? this.player.playVideo() : this.player.pauseVideo();
     if(this.playPauseInput) {
       this.playPauseInput.nativeElement.checked = !this.videoPlay;
@@ -293,21 +309,19 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
 
 
   private onTimeUpdated() {
-    this.currentTimeToShow = secondsToHHMMSS(this.integratedVideoTime);
-    const timeInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.appearence);
+    const appearenceInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.appearence);
     const duration = Math.floor(this.videoInfo.finishesIn);
     const maxMinDiffPerTrim = this.videoInfo.trimmedPeriods[this.trimmedIndex].max - this.videoInfo.trimmedPeriods[this.trimmedIndex].min
     const conditionToNextTrimm = maxMinDiffPerTrim + this.accumulator
-    console.log(this.integratedVideoTime);
-    if(conditionToNextTrimm <= this.integratedVideoTime) {
+    if(conditionToNextTrimm <= this.integratedVideoTime && this.challengeService.exerciseConfig.questionResume.length > this.trimmedIndex) {
       this.accumulator += maxMinDiffPerTrim
       this.trimmedIndex++;
       this.player.seekTo(this.videoInfo.trimmedPeriods[this.trimmedIndex].min, true)
     }
-    if (timeInSeconds <= this.integratedVideoTime && !this.challengeService.exercisesAreOver) {
-      console.log('activada')
+    if (appearenceInSeconds <= this.integratedVideoTime && !this.challengeService.exercisesAreOver) {
+      this.activityComponent.setInputType();
+      this.playPauseEvent(false);
       this.exerciseCompose('100vh', '0vh', true);
-      this.playPauseEvent();
       this.challengeService.questionOn = true;
     } 
     if(this.integratedVideoTime >= duration) {

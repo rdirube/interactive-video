@@ -1,5 +1,5 @@
 import { AfterViewChecked, AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { CorrectionState, InteractiveVideoExercise, OptionsAnswer } from 'src/app/shared/types/types';
+import { CorrectionState, InputType, InteractiveVideoExercise, OptionsAnswer } from 'src/app/shared/types/types';
 import anime from 'animejs';
 import { ArgumentOutOfRangeError, timer } from 'rxjs';
 import { FeedbackOxService, GameActionsService, SoundOxService } from 'micro-lesson-core';
@@ -24,6 +24,7 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
   @ViewChildren('checkBoxes') checkBoxes!:QueryList<ElementRef>;
   private checkBoxesArray!:ElementRef[];
   public composeReady!:boolean;
+  public inputType!:InputType;
  
   constructor(public gameActions: GameActionsService<any>, private answerService:InteractiveVideoAnswerService,
      public challengeService: InteractiveVideoChallengeService, private feedbackService:FeedbackOxService,
@@ -42,7 +43,7 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
  
 
   ngOnInit(): void {
-    console.log(this.exercise.exercise.type)
+   this.setInputType();
   }
 
 
@@ -53,6 +54,11 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
   ngAfterViewChecked(): void {
   }
 
+
+  public setInputType() :void {
+    this.inputType =  this.inputType = this.exercise.exercise.options.filter((e:any) => e.isAnswer).length > 1 ? 'checkbox' : 'radio';     
+
+  }
 
 
   public answerCorrection():void {
