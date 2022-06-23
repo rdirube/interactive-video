@@ -19,6 +19,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
 
   public exercise!: any;
   public questionOn!:boolean;
+  public exercisesToBeCompleted!:number;
   @ViewChild(InteractiveVideoComponent) interactiveVideo! :InteractiveVideoComponent;
 
   constructor(public challengeService: InteractiveVideoChallengeService, public composeService:InteractiveVideoComposeService,
@@ -29,18 +30,20 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     this.endGameService.sendEndEvent = false;
     this.addSubscription(this.challengeService.currentExercise.pipe(filter(x => x !== undefined)),
     (exercise: ExerciseOx<InteractiveVideoExercise>) => {   
-      this.exercise = exercise.exerciseData;
-      if(!this.challengeService.exercisesAreOver) {
-        this.addMetric()
-      }
-      const exerciseIndex = this.metricsService.currentMetrics.expandableInfo?.exercisesData.length as number;
-      if(exerciseIndex === 1 && this.interactiveVideo !== undefined) {      
-      this.interactiveVideo.videoSeek(this.challengeService.exerciseConfig.videoInfo.trimmedPeriods[0].min);
-      this.interactiveVideo.trimmedIndex = 0;
+      this.exercise = exercise.exerciseData;   
+      this.exercisesToBeCompleted = this.metricsService.currentMetrics.expandableInfo?.exercisesData.length as number;
+      if(this.exercisesToBeCompleted === 0 && this.interactiveVideo !== undefined) {      
+       this.challengeService.exercisesAreOver = false;
+       this.interactiveVideo.trimmedIndex = 0;
        this.interactiveVideo.integratedVideoTime = 0;
        this.interactiveVideo.accumulator = 0; 
+       this.interactiveVideo.correctAnswerCounter = 0;
+       this.interactiveVideo.videoSeek(this.challengeService.exerciseConfig.videoInfo.trimmedPeriods[0].min)
     } else {
         this.composeService.continueVideo.emit();
+      }
+      if(!this.challengeService.exercisesAreOver) {
+        this.addMetric()
       }
       this.hintService.usesPerChallenge = 1;
     });

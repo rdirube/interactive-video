@@ -56,8 +56,7 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
 
 
   public setInputType() :void {
-    this.inputType =  this.inputType = this.exercise.exercise.options.filter((e:any) => e.isAnswer).length > 1 ? 'checkbox' : 'radio';     
-
+    this.inputType = this.exercise.exercise.options.filter((e:any) => e.isAnswer).length > 1 ? 'checkbox' : 'radio';     
   }
 
 

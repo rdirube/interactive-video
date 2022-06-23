@@ -31,7 +31,7 @@ export class InteractiveVideoChallengeService extends ChallengeService<Interacti
    }
 
   public exerciseConfig!: InteractiveVideoNivelation;
-
+  public finishedTime:boolean = false; 
 
   constructor(gameActionsService: GameActionsService<any>, private levelService: LevelService,
     subLevelService: SubLevelService,
@@ -45,15 +45,17 @@ export class InteractiveVideoChallengeService extends ChallengeService<Interacti
 
   protected generateNextChallenge(subLevel: number): ExerciseOx<InteractiveVideoExercise> {
     if(this.exerciseIndex > this.exerciseConfig.questionResume.length - 1) {
-       this.exerciseIndex = this.exerciseConfig.questionResume.length - 1;
-       this.exercisesAreOver = true;
-    } else if (this.exerciseIndex === 0) {
+      this.exercisesAreOver = true;
+      this.exerciseIndex =  this.exerciseConfig.questionResume.length - 1;
+    } else if(this.exerciseIndex === 0 && this.finishedTime) {
       this.exercisesAreOver = false;
+      this.finishedTime = false;
     }
+    console.log(this.exerciseIndex);
     return new ExerciseOx (
       {
         exercise: this.exerciseConfig.questionResume[this.exerciseIndex]
-      }, 1 ,{maxTimeToBonus:0, freeTime:0}, []
+      } , 1 ,{maxTimeToBonus:0, freeTime:0}, []
     )
   }
   protected equalsExerciseData(exerciseData: any, exerciseDoneData: any): boolean {
