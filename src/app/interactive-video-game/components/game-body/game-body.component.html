@@ -3,12 +3,10 @@
         <mlc-to-in-game-menu-button [forceNoAnimations]="true"
           style="width: 13vh;" svgPath="mini-lessons/executive-functions/interactive-video/buttons/menu.svg">
         </mlc-to-in-game-menu-button>
-        <mlc-hint-button [forceNoAnimations]="true"  style="width: 13vh; opacity: 1;"
-          svgPath="mini-lessons/executive-functions/interactive-video/buttons/pista.svg"
-          >
+        <mlc-hint-button [forceNoAnimations]="true"  style="width: 13vh;"
+          svgPath="mini-lessons/executive-functions/interactive-video/buttons/pista.svg">
         </mlc-hint-button>
-      </div>
-    
+      </div> 
     <app-interactive-video #interactiveVideo style="width: 100%; height:100%" *ngIf="exercise"  [exercise]="exercise"></app-interactive-video>
     <mlc-footer  class="button-menu" style=" width: 97.5%; height: 12vh; position: absolute; bottom: 0;" [ngStyle]="{'opacity': challengeService.questionOn ? 1 : 0}"
     trySvg="mini-lessons/executive-functions/interactive-video/buttons/check.svg"

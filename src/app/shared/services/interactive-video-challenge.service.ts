@@ -45,13 +45,13 @@ export class InteractiveVideoChallengeService extends ChallengeService<Interacti
 
   protected generateNextChallenge(subLevel: number): ExerciseOx<InteractiveVideoExercise> {
     if(this.exerciseIndex > this.exerciseConfig.questionResume.length - 1) {
+      console.log(this.exerciseIndex, this.exercisesAreOver)
       this.exercisesAreOver = true;
       this.exerciseIndex =  this.exerciseConfig.questionResume.length - 1;
     } else if(this.exerciseIndex === 0 && this.finishedTime) {
       this.exercisesAreOver = false;
       this.finishedTime = false;
     }
-    console.log(this.exerciseIndex);
     return new ExerciseOx (
       {
         exercise: this.exerciseConfig.questionResume[this.exerciseIndex]

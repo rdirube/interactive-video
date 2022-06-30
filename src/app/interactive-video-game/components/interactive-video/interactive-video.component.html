@@ -13,17 +13,17 @@
   </div>
    <div *ngIf="!challengeService.questionOn" fxLayoutAlign="space-evenly center" style="width:100%; height: 10vh;background-image: linear-gradient(180deg, #666666, #000000); z-index: 1000; position: absolute; bottom:0 ">
     <div fxLayoutAlign="center center">
-    <div class="rewind-container" (click)="movementCondition(false,3)">
-      <div class="movement-button"></div>
-      <div class="movement-button" style="transform:translateX(2vh)"></div>
+    <div class="rewind-container" (click)="movementCondition(false,3)" [ngStyle]="{'cursor': blockMovementButton ? 'not-allowed' : 'pointer' }">
+      <div class="movement-button" style="transform:translateY(0.5vh)"></div>
+      <div class="movement-button" style="transform:translate(2vh, 0.5vh)"></div>
     </div> 
-    <div class="playpause" (click)="playPauseEvent(undefined, $event)">
+    <div class="playpause" (click)="playPauseEvent(undefined, $event)" >
       <input #playPauseInput type="checkbox" [defaultChecked]="true" value="None" id="playpause" name="check" />
       <label for="playpause" tabindex=1></label>
     </div>
-    <div class="foward-container" (click)="movementCondition(true,3)">
-      <div class="movement-button"></div>
-      <div class="movement-button" style="transform:translateX(2vh)"></div>
+    <div class="foward-container" (click)="movementCondition(true,3)" [ngStyle]="{'cursor': blockMovementButton ? 'not-allowed' : 'pointer' }">
+      <div class="movement-button" style="transform:translateY(0.5vh)"></div>
+      <div class="movement-button" style="transform:translate(2vh, 0.5vh)"></div>
     </div>
   </div>
     <div #slider class="custom-slider" style=" width:60%; transform: translateY(-1.4vh);">

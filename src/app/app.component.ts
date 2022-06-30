@@ -14,6 +14,8 @@ import { InteractiveVideoChallengeService } from './shared/services/interactive-
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent extends BaseMicroLessonApp {
+  
+
 
   constructor(preloader: PreloaderOxService, translocoService: TranslocoService, wumboxService: InWumboxService,
     communicationOxService: CommunicationOxService, microLessonCommunicationService: MicroLessonCommunicationService<any>,
@@ -37,9 +39,9 @@ export class AppComponent extends BaseMicroLessonApp {
       }
     });
 
-  preloader.addResourcesToLoad(this.getGameResourcesToLoad());
-  console.log('App component instanciated', this);
-  this.sound.setSoundOn(true);  
+  // preloader.addResourcesToLoad(this.getGameResourcesToLoad());
+  // console.log('App component instanciated', this);
+  // this.sound.setSoundOn(true);  
   // preloader.loadAll().subscribe(x => this.loaded = true)
   }
 
@@ -49,6 +51,7 @@ export class AppComponent extends BaseMicroLessonApp {
   return environment.basePath;
    }
 
+   title = 'interactive-video';
 
   protected getGameResourcesToLoad(): ResourceOx[] {
     const svg:string[] = ['mute.svg', 'unmute.svg'];
@@ -59,5 +62,4 @@ export class AppComponent extends BaseMicroLessonApp {
     [ScreenTypeOx.Game], true)).concat(svgElementos.map(x => new ResourceOx('mini-lessons/executive-functions/interactive-video/buttons/' + x, ResourceType.Svg,
     [ScreenTypeOx.Game], false)).concat(sounds.map(x => new ResourceOx('mini-lessons/executive-functions/interactive-video/sounds/' + x , ResourceType.Audio, [ScreenTypeOx.Game], false))))
   }
-  title = 'interactive-video';
 }

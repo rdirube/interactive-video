@@ -22,15 +22,21 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
   @Output() composeEmitter = new EventEmitter()
   @ViewChild('activityContainer') activityContainer!: ElementRef;
   @ViewChildren('checkBoxes') checkBoxes!:QueryList<ElementRef>;
+  @ViewChildren('formControl') formControl!:QueryList<ElementRef>;
+
   private checkBoxesArray!:ElementRef[];
+  private formControlArray!:ElementRef[];
+
   public composeReady!:boolean;
   public inputType!:InputType;
- 
+  public questionTextShow!:boolean;
+
   constructor(public gameActions: GameActionsService<any>, private answerService:InteractiveVideoAnswerService,
      public challengeService: InteractiveVideoChallengeService, private feedbackService:FeedbackOxService,
      private composeService: ComposeService<any>, private soundService: SoundOxService) { 
     super();
     this.composeReady = false;
+    this.questionTextShow = false;
     this.addSubscription(this.gameActions.checkedAnswer, x => {  
     this.answerCorrection();
     })
@@ -55,9 +61,11 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
   }
 
 
+  
   public setInputType() :void {
     this.inputType = this.exercise.exercise.options.filter((e:any) => e.isAnswer).length > 1 ? 'checkbox' : 'radio';     
   }
+
 
 
   public answerCorrection():void {
@@ -80,6 +88,8 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
     }
   }
 
+
+
   private checkedAndCorrect() : {correct:OptionsAnswer[], checked:string[]} {
     return {
       correct: this.exercise.exercise.options.filter((b:any) => b.isAnswer),
@@ -99,6 +109,8 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
      delay:1000,
      complete: () => {  
       this.checkBoxesArray = this.checkBoxes.toArray();
+      this.formControlArray = this.formControl.toArray();
+
        timer(600).subscribe(x => {
         this.optionsInit()              
        })    
@@ -161,7 +173,8 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
 
 
   private wrongAnimation() {
-    const checkedBoxes = this.checkBoxes.filter(b => b.nativeElement.checked);
+    const checkedBoxes = this.checkBoxesArray.filter(b => b.nativeElement.checked);
+    const checkBoxIndex = this.checkBoxes.map((c,i) => i).find(i => this.checkBoxesArray[i].nativeElement.checked) as number
     const rotate = Array.from(Array(8).keys()).map((z, i) => {
       return { value: isEven(i) ? 2 : -2, duration: 50 };
     }).concat([{ value: 0, duration: 50 }]);
@@ -171,6 +184,20 @@ export class ActivityComponent extends SubscriberOxDirective implements OnInit, 
       },
       targets: checkedBoxes.map(b => b.nativeElement),
       rotate
+    });
+    anime({
+      targets: [checkedBoxes.map(b => b.nativeElement)],
+      backgroundColor: 'rgb(255,0,0)',
+      duration: 500,
+      easing:'linear',
+      direction: 'alternate'
+    });
+    anime({
+      targets: this.formControlArray[checkBoxIndex].nativeElement,
+      color: 'rgb(255,0,0)',
+      duration: 500,
+      easing:'linear',
+      direction: 'alternate'
     });
   }
   

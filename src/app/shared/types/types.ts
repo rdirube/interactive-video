@@ -82,3 +82,5 @@ export interface OptionsAnswer {
   content:string
   isAnswer:boolean
 }
+
+

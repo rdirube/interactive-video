@@ -32,6 +32,7 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
     (exercise: ExerciseOx<InteractiveVideoExercise>) => {   
       this.exercise = exercise.exerciseData;   
       this.exercisesToBeCompleted = this.metricsService.currentMetrics.expandableInfo?.exercisesData.length as number;
+      this.hintService.usesPerChallenge = this.exercise.exercise.rewindByTrim !== undefined ? 1 : 0;
       if(this.exercisesToBeCompleted === 0 && this.interactiveVideo !== undefined) {      
        this.challengeService.exercisesAreOver = false;
        this.interactiveVideo.trimmedIndex = 0;
@@ -39,13 +40,14 @@ export class GameBodyComponent extends SubscriberOxDirective implements OnInit {
        this.interactiveVideo.accumulator = 0; 
        this.interactiveVideo.correctAnswerCounter = 0;
        this.interactiveVideo.videoSeek(this.challengeService.exerciseConfig.videoInfo.trimmedPeriods[0].min)
-    } else {
+       this.interactiveVideo.positionAcc = 0;
+      } else {
         this.composeService.continueVideo.emit();
       }
       if(!this.challengeService.exercisesAreOver) {
         this.addMetric()
       }
-      this.hintService.usesPerChallenge = 1;
+      console.log(this.hintService.usesPerChallenge)
     });
     this.addSubscription(this.gameActions.microLessonCompleted, z => {     
       timer(100).subscribe(zzz => {

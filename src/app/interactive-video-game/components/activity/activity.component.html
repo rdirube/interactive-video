@@ -1,13 +1,13 @@
 <div *ngIf="exercise" #activityContainer class="full-size" fxLayout="column" fxLayoutAlign="start center" style=" position: absolute;" [ngStyle]="{'background-color':   challengeService.correctionState === true ? 'rgb(152,251,152)' : inputType === 'checkbox' ? 'rgba(0, 135, 228)' : 'rgb(244, 187, 68)'}">
 <div *ngIf="composeReady" style="position: relative; width: 75%;" fxLayoutAlign="center center" >
     <div fxLayoutAlign="center center" class="question-container" (click)="answerCorrection()">
-        <ox-text class="question"  [originalText]="exercise.exercise.question"
+        <ox-text class="question" *ngIf="questionTextShow" [originalText]="exercise.exercise.question"
         fontSize="4vh" color="white" font="dinnRegular" style="transform: translateY(1.5vh);"></ox-text>
     </div>
 </div>
     <div fxLayout="column" fxLayoutAlign="center start" style="width:90%;height: 60vh;transform:translateY(5.5vh)">
         <div *ngFor="let opt of exercise.exercise.options" class="option-container"  fxLayoutAlign="start center" >
-            <label class="form-control">
+            <label #formControl class="form-control">
                 <input #checkBoxes style="cursor:pointer;"  (click)="playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/selectedInput.mp3')" (change)="correctablePart()" [type]="inputType" name="checkbox" />
               </label>
               <ox-text  [originalText]="opt.content" style="margin-left: 3vh;"

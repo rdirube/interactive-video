@@ -63,6 +63,9 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
   public sliderWidth!:number; 
   public rewindActivated!:boolean;
   public correctAnswerCounter!:number;
+  private alreadyMoved!:boolean;
+  public positionAcc!:number; 
+  public blockMovementButton!:boolean;
 
   public videoOptions: Options = {
     floor: 0,
@@ -88,14 +91,21 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     this.rewindActivated = false;
     this.accumulator = 0;
     this.correctAnswerCounter = 0;
+    this.alreadyMoved = false;
+    this.positionAcc = 0; 
+    this.blockMovementButton = false;
     this.soundImage = '../../../assets/interactive-video/svg/unmute.svg';
     this.addSubscription(this.composeService.continueVideo, x => {
+      this.activityComponent.questionTextShow = false;
       this.exerciseCompose('0vh','-100vh', false)
     })
     this.addSubscription(this.gameActions.showHint, x => {
       this.playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/hint.mp3')
       this.challengeService.questionOn = false;
       this.rewindTime() 
+      console.log(this.hintService)
+    
+    
            // this.rewindQuestionHide();
       // const rewindInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.rewindAppearence);
       // this.videoSeek(rewindInSeconds);
@@ -190,7 +200,8 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     exercises.forEach(e => {
       const questionAppearence = e.appearenceByTrim.appearence + (e.appearenceByTrim.trim > 0 ? this.trimmedAccValue(e.appearenceByTrim.trim) : 0)
        const percetangeToMove = questionAppearence / this.videoInfo.finishesIn ;
-       e.positionInVideo = (percetangeToMove * this.sliderWidth)
+       e.positionInVideo = (percetangeToMove * this.sliderWidth) - this.positionAcc;
+       this.positionAcc += 2
     })
   }
 
@@ -236,6 +247,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
       easing: !compose ?  'linear' : 'easeInOutSine' ,
       complete: () => {
         if(compose) {
+          this.activityComponent.questionTextShow = true;
           this.activityComponent.composeReady = true;
           this.activityComponent.questionInit();
         } else {
@@ -261,16 +273,20 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
    })
   }
 
+  private maxMinDiffPerTrim(param:number):number {
+    return this.videoInfo.trimmedPeriods[this.trimmedIndex + param].max - this.videoInfo.trimmedPeriods[this.trimmedIndex + param].min
+  }
 
 
   public movementCondition(foward:boolean , directionMovement:number):void {
-    if(this.integratedVideoTime >  0) {
+    if(this.integratedVideoTime >  0 && !this.blockMovementButton) {
       if(foward ? this.currentTime + directionMovement > this.videoInfo.trimmedPeriods[this.trimmedIndex].max : this.currentTime - directionMovement < this.videoInfo.trimmedPeriods[this.trimmedIndex].min) {
         const firstTime = duplicateWithJSON(this.currentTime);
         if(!foward) {
-          const maxMinDiffPerTrim = this.videoInfo.trimmedPeriods[this.trimmedIndex - 1].max - this.videoInfo.trimmedPeriods[this.trimmedIndex - 1].min
-          this.accumulator -= maxMinDiffPerTrim
-          console.log(this.accumulator)
+          this.accumulator -= this.maxMinDiffPerTrim(-1)
+        } else {
+          this.alreadyMoved = true;
+          this.accumulator += this.maxMinDiffPerTrim(1)
         }
         foward ? this.trimmedIndex++ : this.trimmedIndex--;
         timer(50).subscribe(x => {
@@ -280,9 +296,21 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
        } else {
         this.videoTranslation(foward, directionMovement, this.currentTime + (foward ? directionMovement : -directionMovement))
       }
+      this.blockMovementButton = true;
+      this.nullMovementButton();
+    } else {
+      this.playLoadedSound('mini-lessons/executive-functions/interactive-video/sounds/cantClick.mp3')
+
     }
  }
  
+
+
+ private nullMovementButton():void {
+   setTimeout(() => {
+    this.blockMovementButton = false;
+   }, 1000)
+ }
 
 
   private rewindQuestionHide():void {
@@ -347,13 +375,7 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     const appearenceInSeconds = HHMMSStoNumberFromString(this.exercise.exercise.appearence);
     const duration = this.videoInfo.finishesIn;
     this.currentTime = Math.floor(this.player.getCurrentTime()) 
-    const maxMinDiffPerTrim = this.videoInfo.trimmedPeriods[this.trimmedIndex].max - this.videoInfo.trimmedPeriods[this.trimmedIndex].min
-    const conditionToNextTrimm = maxMinDiffPerTrim + this.accumulator
-    if(conditionToNextTrimm <= this.integratedVideoTime && this.challengeService.exerciseConfig.questionResume.length > this.trimmedIndex) {
-      this.accumulator += maxMinDiffPerTrim
-      this.trimmedIndex++;
-      this.player.seekTo(this.videoInfo.trimmedPeriods[this.trimmedIndex].min, true)
-    }
+    const conditionToNextTrimm = this.maxMinDiffPerTrim(0) + this.accumulator;
     if (appearenceInSeconds <= this.integratedVideoTime && !this.challengeService.exercisesAreOver) {
       this.rewindActivated = false;
       this.playPauseEvent(false);
@@ -368,17 +390,28 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
       this.gameActions.microLessonCompleted.emit();
       this.playPauseEvent(false)
     }
+    if(conditionToNextTrimm <= this.integratedVideoTime && this.challengeService.exerciseConfig.questionResume.length > this.trimmedIndex) {
+      this.accumulator += this.maxMinDiffPerTrim(0);
+      if(!this.alreadyMoved) {
+        this.trimmedIndex++;
+        this.player.seekTo(this.videoInfo.trimmedPeriods[this.trimmedIndex].min, true)
+      } else {
+        this.alreadyMoved = false
+      }
+    }
+    
+  
   }
 
 
 
   public soundOnOff() {
     if (this.isMute) {
-      this.youtubePlayer.mute();
-      this.soundImage = '../../../assets/interactive-video/svg/mute.svg';
-    } else {
       this.youtubePlayer.unMute();
       this.soundImage = '../../../assets/interactive-video/svg/unmute.svg';
+    } else {
+      this.youtubePlayer.mute();
+      this.soundImage = '../../../assets/interactive-video/svg/mute.svg';
     }
     this.isMute = !this.isMute;
   }
@@ -390,14 +423,24 @@ export class InteractiveVideoComponent extends SubscriberOxDirective implements 
     const rewindTime = this.exercise.exercise.rewindByTrim.appearence + diffTime;
     const findTrim = this.videoInfo.trimmedPeriods.findIndex(t => t.max > rewindTime && t.min <= rewindTime);
     const timeToRewind = findTrim > 0 ? this.videoInfo.trimmedPeriods.filter((t,i) => i < findTrim).map(t => t.max - t.min).reduce((acc,b) => acc + b) : 0 
+    this.accumulatorRewindCalculator(findTrim);
     this.integratedVideoTime =  this.exercise.exercise.rewindByTrim.appearence + timeToRewind;
     this.player.seekTo(rewindTime, true);
-    this.trimmedIndex = findTrim;
     this.rewindQuestionHide();
     this.youtubePlayer.pauseVideo();
   }
 
-
-
+  
+  private accumulatorRewindCalculator(rewindTrim:number) {
+     const actualTrim = this.videoInfo.trimmedPeriods.findIndex(t => t.max > this.currentTime && t.min <= this.currentTime);
+     if(rewindTrim < actualTrim) {
+      const TrimDiff = actualTrim - rewindTrim;
+      for(let i = 0; TrimDiff > i ; i++) {
+        this.accumulator-= this.maxMinDiffPerTrim(-1)
+        this.trimmedIndex--;
+      }
+     }
+    }
+  
 
 }
